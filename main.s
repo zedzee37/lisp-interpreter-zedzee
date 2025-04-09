@@ -26,35 +26,50 @@ main:
 
     .no_arg:
 
-    ; allocate memory on the stack for the line
+    ; Allocate space for line pointer and size
     sub rsp, 16 ; rsp - 24
 
-    sub rsp, 8 ; rsp - 32
+    .no_arg_loop:
+    
+    ; Initialize the pointers to NULL
+    mov qword [rsp], 0    ; char* lineptr = NULL
+    mov qword [rsp+8], 0  ; size_t size = 0
+
+    sub rsp, 8 ; rsp - 32, align to 16 bits
     mov rdi, prompt_text
     xor rax, rax
     call printf
-    add rsp, 8 ; rsp - 24
 
-    lea rdi, [rsp]
-    lea rsi, [rsp + 8]
+    ; Call getline properly
+    lea rdi, [rsp + 8]        ; address of lineptr
+    lea rsi, [rsp + 16]      ; address of size
     mov rdx, [rel stdin]
     call getline
+    
+    add rsp, 8 ; rsp - 24
 
-    push rax ; rsp - 32, store the length of the input
+    ; Check return value
+    cmp rax, -1
+    je .no_input          ; getline failed or EOF
 
-    mov rdi, [rsp + 8] ; + 8 because the push of rax
+    push rax ; rsp - 32
+
+    ; free the data
+    mov rdi, [rsp + 8]
+    xor rax, rax
     call free
 
-    ; reset the pointers to avoid double frees
-    mov qword [rsp + 8], 0
-    mov qword [rsp + 16], 0
-
     pop rax ; rsp - 24
-    add rsp, 16
 
-    cmp rax, 2 ; if the length = 0, then exit the loop
-    jl .done
-    jmp .no_arg
+    cmp rax, 2
+    jl .no_input
+
+    ; Prepare for next iteration
+    jmp .no_arg_loop
+
+    .no_input:
+    add rsp, 16
+    jmp .done
 
     .too_many:
     sub rsp, 8 ; rsp - 16
