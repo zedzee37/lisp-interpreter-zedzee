@@ -67,36 +67,34 @@ main:
     mov rdx, [rel stdin]
     call getline
 
-    mov r8, rax ; store the size in r8
-
-    ; Check return value
-    cmp r8, -1
-    je .skip_free          ; getline failed or EOF
-
-    cmp r8, 2
-    jl .no_input
-    
     mov rdi, [rsp + 8]
     mov rsi, rax
+    xor rax, rax
     call lex
+    
+    add rsp, 8 ; rsp - 24
 
+    ; Check return value
+    cmp rax, -1
+    je .no_input          ; getline failed or EOF
+
+    push rax ; rsp - 32
+
+    ; free the data
     mov rdi, [rsp + 8]
     xor rax, rax
     call free
 
-    add rsp, 8 ; rsp - 24, remove alignment
+    pop rax ; rsp - 24
+
+    cmp rax, 2
+    jl .no_input
 
     ; Prepare for next iteration
     jmp .no_arg_loop
 
     .no_input:
-
-    mov rdi, [rsp + 8]
-    xor rax, rax
-    call free
-
-    .skip_free:
-    add rsp, 24 ; rsp - 8, remove alignment
+    add rsp, 16
     jmp .done
 
     .too_many:
@@ -107,7 +105,7 @@ main:
     add rsp, 8 ; rsp - 8
 
     .done:
-    pop rbp ; rsp
+    pop rbp
     xor rax, rax ; return 0
     ret
 
