@@ -5,7 +5,6 @@
 
 typedef enum {
 	LITERAL,
-	GROUPING,
 	LIST,
 	IDENTIFIER
 } ExprType;
@@ -22,11 +21,6 @@ typedef struct {
 		double number;
 	} data;
 } LiteralExpr;
-
-typedef struct {
-	Expr base;
-	Expr *expr;
-} GroupingExpr;
 
 typedef struct {
 	Expr base;
