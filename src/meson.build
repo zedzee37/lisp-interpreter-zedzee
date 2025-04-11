@@ -1,5 +1,6 @@
 files = [
-  'main.c'
+  'main.c',
+  'parser.c',
 ]
 
 include_dirs = include_directories('../include')
