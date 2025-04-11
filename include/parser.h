@@ -14,3 +14,4 @@ typedef struct {
 } Parser;
 
 Expr **parse(const char *source, size_t *exprsSize);
+Expr *parseExpr(Parser *parser);

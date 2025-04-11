@@ -24,9 +24,9 @@ typedef struct {
 
 typedef struct {
 	Expr base;
-	Expr *left;
-	Expr **right;
-	size_t rightSize;
+	Expr **exprs;
+	size_t exprsSize;
+    size_t exprsCount;
 } ListExpr;
 
 typedef struct {

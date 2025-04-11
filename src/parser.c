@@ -1,9 +1,9 @@
 #include "expr.h"
-#include <parser.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <parser.h>
 
 // parse parses the entire string into expressions, whilst parseExpr parses a single expression
 
@@ -29,8 +29,29 @@ void consumeWhitespace(Parser *parser) {
 	}
 }
 
-Expr *parseListExpr(Parser *parser) {
+ListExpr parseListExpr(Parser *parser) {
+    parser->current++; // consume the left parenthesis
+    consumeWhitespace(parser);
 
+    // error
+    if (parser->source[parser->current] == ')') {
+        return (ListExpr){};
+    }
+
+    ListExpr expr;
+    expr.base = (Expr){ .type = LIST };
+
+    expr.exprsSize = 2;
+    expr.exprsCount = 0;
+
+    expr.exprs = calloc(expr.exprsSize, sizeof(Expr **));
+    
+    while (parser->source[parser->current] != ')') {
+        Expr *expr = parseExpr(parser);
+        
+    }
+
+    return expr;
 }
 
 Expr *parseString(Parser *parser) {
