@@ -1,3 +1,5 @@
+#include "expr.h"
+#include "parser.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,6 +29,9 @@ char *readFile(char *fileName) {
 }
 
 void run(char *source) {
+	size_t exprCount;
+	Expr **exprs = parse(source, &exprCount);
+	free(exprs);
 }
 
 void runFile(char *fileName) {
