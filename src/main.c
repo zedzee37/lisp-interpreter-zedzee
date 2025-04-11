@@ -13,7 +13,7 @@ char *readFile(char *fileName) {
     size_t size = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
-    char *fileContents = calloc(size + 1, sizeof(char)); 
+    char *fileContents = calloc(size + 1, sizeof(char));
     if (!fileContents) {
         return NULL;
     }
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
     if (argc == 2) {
         runFile(argv[1]);
     } else if (argc == 1)  {
-        runPrompt();        
+        runPrompt();
     } else {
         printf("Expects either 1 or 2 args.\n");
     }
