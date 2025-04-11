@@ -29,14 +29,53 @@ void consumeWhitespace(Parser *parser) {
 	}
 }
 
+Expr *parseListExpr(Parser *parser) {
+
+}
+
+Expr *parseString(Parser *parser) {
+
+}
+
+Expr *parseNumber(Parser *parser) {
+
+}
+
+Expr *parseIdentifier(Parser *parser) {
+
+}
+
 Expr *parseExpr(Parser *parser) {
 	consumeWhitespace(parser);
+
 	char ch = parser->source[parser->current];
 
-	if (ch != '(') {
-		// TODO: error here
-		return NULL;
+	switch (ch) {
+		case '(':
+		return parseListExpr(parser);
+		break;
+		default:
+		break;
 	}
+
+	// // All expressions should start with a left parenthesis
+	// if (ch != '(') {
+	// 	// TODO: error here
+	// 	return NULL;
+	// }
+
+	// consumeWhitespace(parser);
+
+	// // Empty expression
+	// if (parser->source[parser->current] == ')') {
+	// 	return NULL;
+	// }
+
+	// while (parser->source[parser->current] != ')') {
+	// 	Expr *expr = parseExpr(parser);
+
+	// 	consumeWhitespace(parser);
+	// }
 }
 
 Expr **parse(const char *source, size_t *tokensSize) {
