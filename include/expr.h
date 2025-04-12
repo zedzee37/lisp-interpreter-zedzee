@@ -33,3 +33,5 @@ typedef struct {
 	Expr base;
 	char *name;
 } IdentifierExpr;
+
+void freeExpr(Expr *expr);

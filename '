@@ -8,16 +8,14 @@
 // parse parses the entire string into expressions, whilst parseExpr parses a single expression
 
 void freeExpr(Expr *expr) {
-    ListExpr *list = (ListExpr *)expr;
-    IdentifierExpr *identifier = (IdentifierExpr *)expr;
-    LiteralExpr *literal = (LiteralExpr *)expr;
+    ListExpr *list = expr;
 
     switch (expr->type) {
     LITERAL:
         break;
     LIST:
         // Free all exprs
-        free(list->exprs); 
+        
         break;
     IDENTIFIER:
         break;
