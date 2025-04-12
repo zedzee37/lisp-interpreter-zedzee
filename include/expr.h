@@ -9,6 +9,12 @@ typedef enum {
 	IDENTIFIER
 } ExprType;
 
+typedef enum {
+	STRING,
+	BOOLEAN,
+	NUMBER,
+} LiteralType;
+
 typedef struct {
 	ExprType type;
 } Expr;
@@ -20,6 +26,7 @@ typedef struct {
 		bool boolean;
 		double number;
 	} data;
+	LiteralType type;
 } LiteralExpr;
 
 typedef struct {

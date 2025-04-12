@@ -8,20 +8,28 @@
 // parse parses the entire string into expressions, whilst parseExpr parses a single expression
 
 void freeExpr(Expr *expr) {
-    ListExpr *list = (ListExpr *)expr;
-    IdentifierExpr *identifier = (IdentifierExpr *)expr;
-    LiteralExpr *literal = (LiteralExpr *)expr;
+	ListExpr *list = (ListExpr *)expr;
+	IdentifierExpr *identifier = (IdentifierExpr *)expr;
+	LiteralExpr *literal = (LiteralExpr *)expr;
 
-    switch (expr->type) {
-    LITERAL:
-        break;
-    LIST:
-        // Free all exprs
-        free(list->exprs); 
-        break;
-    IDENTIFIER:
-        break;
-    }
+	switch (expr->type) {
+		LITERAL:
+		switch (literal->type) {
+			STRING:
+			free(literal->data.string);
+			break;
+			default:
+			break;
+		}
+		break;
+		LIST:
+		// Free all exprs
+		free(list->exprs);
+		break;
+		IDENTIFIER:
+		free(identifier->name);
+		break;
+	}
 }
 
 void consumeWhitespace(Parser *parser) {
@@ -47,31 +55,31 @@ void consumeWhitespace(Parser *parser) {
 }
 
 ListExpr parseListExpr(Parser *parser) {
-    parser->current++; // consume the left parenthesis
-    consumeWhitespace(parser);
+	parser->current++; // consume the left parenthesis
+	consumeWhitespace(parser);
 
-    // error
-    if (parser->source[parser->current] == ')') {
-        return (ListExpr){};
-    }
+	// error
+	if (parser->source[parser->current] == ')') {
+		return (ListExpr){};
+	}
 
-    ListExpr expr;
-    expr.base = (Expr){ .type = LIST };
+	ListExpr expr;
+	expr.base = (Expr){ .type = LIST };
 
-    expr.exprsSize = 2;
-    expr.exprsCount = 0;
+	expr.exprsSize = 2;
+	expr.exprsCount = 0;
 
-    expr.exprs = calloc(expr.exprsSize, sizeof(Expr **));
+	expr.exprs = calloc(expr.exprsSize, sizeof(Expr **));
 
-    while (parser->source[parser->current] != ')') {
-        Expr *expr = parseExpr(parser);
-    }
+	while (parser->source[parser->current] != ')') {
+		Expr *expr = parseExpr(parser);
+	}
 
-    return expr;
+	return expr;
 }
 
 LiteralExpr parseString(Parser *parser) {
-    
+
 }
 
 LiteralExpr parseNumber(Parser *parser) {
@@ -83,12 +91,12 @@ IdentifierExpr parseIdentifier(Parser *parser) {
 }
 
 void addExpr(Parser *parser, Expr *expr) {
-    if (parser->exprsCount >= parser->exprsSize) {
-        parser->exprsSize *= 2;
-        parser->exprs = reallocarray(parser->exprs, parser->exprsSize, sizeof(Expr *));
-    }
+	if (parser->exprsCount >= parser->exprsSize) {
+		parser->exprsSize *= 2;
+		parser->exprs = reallocarray(parser->exprs, parser->exprsSize, sizeof(Expr *));
+	}
 
-    parser->exprs[parser->current++] = expr;
+	parser->exprs[parser->current++] = expr;
 }
 
 Expr *parseExpr(Parser *parser) {
@@ -96,26 +104,26 @@ Expr *parseExpr(Parser *parser) {
 
 	char ch = parser->source[parser->current];
 
-    union {
-        ListExpr list;
-        LiteralExpr literal;
-        IdentifierExpr identifier;
-    } exp;
+	union {
+		ListExpr list;
+		LiteralExpr literal;
+		IdentifierExpr identifier;
+	} exp;
 
-    Expr *expr = NULL;
+	Expr *expr = NULL;
 	switch (ch) {
 		case '(':
-            exp.list = parseListExpr(parser);
-            expr = (Expr *)&exp.list;
-            break;
-        case '"':
-            exp.literal = parseString(parser);
-            expr = (Expr *)&exp.literal;
+		exp.list = parseListExpr(parser);
+		expr = (Expr *)&exp.list;
+		break;
+		case '"':
+		exp.literal = parseString(parser);
+		expr = (Expr *)&exp.literal;
 		default:
-            break;
+		break;
 	}
 
-    return expr;
+	return expr;
 }
 
 Expr **parse(const char *source, size_t *tokensSize) {
