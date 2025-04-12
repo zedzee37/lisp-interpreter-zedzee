@@ -45,7 +45,7 @@ ListExpr parseListExpr(Parser *parser) {
     expr.exprsCount = 0;
 
     expr.exprs = calloc(expr.exprsSize, sizeof(Expr **));
-    
+
     while (parser->source[parser->current] != ')') {
         Expr *expr = parseExpr(parser);
     }
@@ -82,7 +82,7 @@ Expr *parseExpr(Parser *parser) {
     Expr *expr = NULL;
 	switch (ch) {
 		case '(':
-            exp.list = parseListExpr(parser);    
+            exp.list = parseListExpr(parser);
             expr = (Expr *)&exp.list;
             break;
 		default:
@@ -105,6 +105,17 @@ Expr **parse(const char *source, size_t *tokensSize) {
 		.exprsSize = currentSize,
 		.exprsCount = 0
 	};
+
+	while (parser.current < parser.sourceLength) {
+		Expr *expr = parseExpr(&parser);
+
+		// An error occured
+		if (!expr) {
+			return NULL;
+		}
+
+		addExpr(&parser, expr);
+	}
 
 	*tokensSize = parser.exprsCount;
 	return exprs;
