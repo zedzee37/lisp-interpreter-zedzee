@@ -31,6 +31,10 @@ char *readFile(char *fileName) {
 void run(char *source) {
 	size_t exprCount;
 	Expr **exprs = parse(source, &exprCount);
+
+    for (int i = 0; i < exprCount; i++) {
+        freeExpr(exprs[i]);
+    }
 	free(exprs);
 }
 
