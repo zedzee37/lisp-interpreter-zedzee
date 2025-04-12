@@ -65,37 +65,31 @@ Expr *parseIdentifier(Parser *parser) {
 
 }
 
+void addExpr(Parser *parser, Expr *expr) {
+}
+
 Expr *parseExpr(Parser *parser) {
 	consumeWhitespace(parser);
 
 	char ch = parser->source[parser->current];
 
+    union {
+        ListExpr list;
+        LiteralExpr literal;
+        IdentifierExpr identifier;
+    } exp;
+
+    Expr *expr = NULL;
 	switch (ch) {
 		case '(':
-		return parseListExpr(parser);
-		break;
+            exp.list = parseListExpr(parser);    
+            expr = (Expr *)&exp.list;
+            break;
 		default:
-		break;
+            break;
 	}
 
-	// // All expressions should start with a left parenthesis
-	// if (ch != '(') {
-	// 	// TODO: error here
-	// 	return NULL;
-	// }
-
-	// consumeWhitespace(parser);
-
-	// // Empty expression
-	// if (parser->source[parser->current] == ')') {
-	// 	return NULL;
-	// }
-
-	// while (parser->source[parser->current] != ')') {
-	// 	Expr *expr = parseExpr(parser);
-
-	// 	consumeWhitespace(parser);
-	// }
+    return expr;
 }
 
 Expr **parse(const char *source, size_t *tokensSize) {
