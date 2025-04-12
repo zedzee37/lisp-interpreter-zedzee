@@ -48,7 +48,6 @@ ListExpr parseListExpr(Parser *parser) {
     
     while (parser->source[parser->current] != ')') {
         Expr *expr = parseExpr(parser);
-        
     }
 
     return expr;
