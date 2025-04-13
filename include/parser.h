@@ -3,6 +3,18 @@
 #include <stddef.h>
 #include <expr.h>
 
+typedef enum {
+	NONE,
+	UNEXPECTED_CHAR,
+} ParserErrorType;
+
+typedef struct {
+	ParserErrorType errorType;
+	size_t line;
+	size_t where;
+	char unexpected;
+} ParserError;
+
 typedef struct {
 	const char *source;
 	size_t sourceLength;
@@ -13,5 +25,5 @@ typedef struct {
 	size_t exprsCount;
 } Parser;
 
-Expr **parse(const char *source, size_t *exprsSize);
-Expr *parseExpr(Parser *parser);
+ParserError parse(const char *source, size_t *exprsSize, Expr ***returnExprs);
+ParserError parseExpr(Parser *parser, Expr **expr);

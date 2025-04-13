@@ -28,9 +28,19 @@ char *readFile(char *fileName) {
     return fileContents;
 }
 
+void reportError(ParserError err) {
+	return;
+}
+
 void run(char *source) {
 	size_t exprCount;
-	Expr **exprs = parse(source, &exprCount);
+	Expr **exprs;
+	ParserError err = parse(source, &exprCount, &exprs);
+
+	if (err.errorType != NONE) {
+		reportError(err);
+		return;
+	}
 
     for (int i = 0; i < exprCount; i++) {
         freeExpr(exprs[i]);
