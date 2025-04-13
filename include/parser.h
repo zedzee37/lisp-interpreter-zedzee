@@ -6,13 +6,14 @@
 typedef enum {
 	NONE,
 	UNEXPECTED_CHAR,
+    MISSING_CHAR,
 } ParserErrorType;
 
 typedef struct {
 	ParserErrorType errorType;
 	size_t line;
 	size_t where;
-	char unexpected;
+	char ch;
 } ParserError;
 
 typedef struct {

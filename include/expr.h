@@ -25,7 +25,7 @@ typedef struct {
 		char *string;
 		bool boolean;
 		double number;
-	} data;
+	};
 	LiteralType type;
 } LiteralExpr;
 
