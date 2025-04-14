@@ -1,9 +1,11 @@
 #include "expr.h"
+#include <ctype.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <parser.h>
+#include <uchar.h>
 
 // parse parses the entire string into expressions, whilst parseExpr parses a single expression
 
@@ -16,7 +18,7 @@ void freeExpr(Expr *expr) {
         case LITERAL:
             switch (literal->type) {
                 case STRING:
-                    free(literal->data.string);
+                    free(literal->string);
                     break;
                 default:
                     break;
@@ -36,6 +38,7 @@ void consumeWhitespace(Parser *parser) {
     while (parser->current < parser->sourceLength) {
         char ch = parser->source[parser->current];
 
+        // Ignore whitespace, besdies \n, in which case increment the line.
         switch (ch) {
             case ' ':
                 break;
@@ -117,14 +120,14 @@ ParserError parseString(Parser *parser, LiteralExpr *expr) {
     ParserError maybeError;
 
     parser->current++; // Consume the "
-    
+
     size_t strSize = 10;
     size_t charCount = 0;
     char *str = calloc(strSize, sizeof(char));
-    
+
     while (parser->source[parser->current] != '"') {
         char ch = parser->source[parser->current++];
-        
+
         if (charCount >= strSize) {
             strSize *= 2;
             str = reallocarray(str, strSize, sizeof(char));
@@ -151,7 +154,7 @@ ParserError parseString(Parser *parser, LiteralExpr *expr) {
     }
 
     str[charCount] = '\0'; 
-    
+
     // Return the captured string'
     LiteralExpr stringLiteral;
     stringLiteral.type = STRING;
@@ -165,6 +168,41 @@ ParserError parseString(Parser *parser, LiteralExpr *expr) {
 
 ParserError parseNumber(Parser *parser, LiteralExpr *expr) {
     ParserError maybeError;
+
+    size_t strSize = 5;
+    size_t digitCount = 0;
+    char *number = calloc(strSize, sizeof(char));
+    bool foundDecimal = false;
+
+    while (
+        parser->current < parser->sourceLength
+    ) {
+        char ch = parser->source[parser->current++];
+
+        if (!isdigit(ch)) {
+            if (ch == '.') {
+                if (foundDecimal) {
+                    free(number);
+                    maybeError.errorType = UNEXPECTED_CHAR;
+                    maybeError.where = parser->current;
+                    maybeError.line = parser->line;
+                    maybeError.ch = '.';
+                    return maybeError;
+                }
+
+                foundDecimal = true; 
+            } else {
+                break;
+            }
+        }
+
+        if (digitCount >= strSize) {
+            strSize *= 2;
+            number = reallocarray(number, strSize, sizeof(char)); 
+        }
+        
+        number[digitCount++] = ch;
+    }
 
     maybeError.errorType = NONE;
     return maybeError;
