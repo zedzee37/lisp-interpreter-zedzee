@@ -204,12 +204,57 @@ ParserError parseNumber(Parser *parser, LiteralExpr *expr) {
         number[digitCount++] = ch;
     }
 
+    // Make room for the null terminator.
+    if (digitCount >= strSize) {
+        strSize += 1;
+        number = reallocarray(number, strSize, sizeof(char));
+    }
+
+    number[digitCount] = '\0'; 
+
+    LiteralExpr literal;
+    literal.base = (Expr){ .type = LITERAL };
+    literal.type = NUMBER;
+    literal.number = atof(number);
+    free(number);
+
     maybeError.errorType = NONE;
     return maybeError;
 }
 
-ParserError parseIdentifier(Parser *parser, LiteralExpr *expr) {
+ParserError parseIdentifier(Parser *parser, IdentifierExpr *expr) {
     ParserError maybeError;
+
+    size_t strSize = 10;
+    size_t charCount = 0;
+    char *str = calloc(strSize, sizeof(char));
+
+    while (
+        parser->current < parser->sourceLength &&
+        isalpha(parser->source[parser->current])
+    ) {
+        char ch = parser->source[parser->current++];
+        
+        if (charCount >= strSize) {
+            strSize *= 2;
+            str = reallocarray(str, strSize, sizeof(char));
+        }
+
+        str[charCount++] = ch;
+    }
+
+    // Make room for the null terminator.
+    if (charCount >= strSize) {
+        strSize += 1;
+        str = reallocarray(str, strSize, sizeof(char));
+    }
+
+    str[charCount] = '\0'; 
+
+    IdentifierExpr identifier;
+    identifier.base = (Expr){ .type = IDENTIFIER };
+    identifier.name = str;
+    *expr = identifier;
 
     maybeError.errorType = NONE;
     return maybeError;
@@ -248,10 +293,17 @@ ParserError parseExpr(Parser *parser, Expr **expr) {
             *expr = (Expr *)&exp.literal;
             break;
         default:
-            maybeErr.errorType = UNEXPECTED_CHAR;
-            maybeErr.line = parser->line;
-            maybeErr.where = parser->current;
-            maybeErr.ch = ch;
+            if (isdigit(ch)) {
+                maybeErr = parseNumber(parser, &exp.literal);
+            } else if (isalpha(ch)) {
+                maybeErr = parseIdentifier(parser, &exp.identifier);
+            } else {
+                maybeErr.errorType = UNEXPECTED_CHAR;
+                maybeErr.line = parser->line;
+                maybeErr.where = parser->current;
+                maybeErr.ch = ch;
+            }
+
             break;
     }
 
