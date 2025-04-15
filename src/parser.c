@@ -245,7 +245,7 @@ ParserError parseIdentifier(Parser *parser, IdentifierExpr *expr) {
 	// Make room for the null terminator.
 	if (charCount >= strSize) {
 		strSize += 1;
-		str = reallocarray(str, strSize, sizeof(char));
+		str = realloc(str, strSize * sizeof(char));
 	}
 
 	str[charCount] = '\0';
