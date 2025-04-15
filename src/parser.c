@@ -118,24 +118,13 @@ ParserError parseListExpr(Parser *parser, ListExpr *expr) {
 ParserError parseString(Parser *parser, LiteralExpr *expr) {
 	ParserError maybeError;
 
-	parser->current++; // Consume the "
+	parser->current++; // Consume the opening "
 
 	size_t strSize = 10;
 	size_t charCount = 0;
 	char *str = calloc(strSize, sizeof(char));
 
-	while (parser->source[parser->current] != '"') {
-		char ch = parser->source[parser->current++];
-
-		if (charCount >= strSize) {
-			strSize *= 2;
-			str = realloc(str, strSize * sizeof(char));
-		}
-
-		str[charCount++] = ch;
-
-		parser->current++;
-
+	while (true) {
 		if (parser->current >= parser->sourceLength) {
 			free(str);
 			maybeError.errorType = MISSING_CHAR;
@@ -144,17 +133,28 @@ ParserError parseString(Parser *parser, LiteralExpr *expr) {
 			maybeError.where = parser->current;
 			return maybeError;
 		}
+
+		char ch = parser->source[parser->current];
+		if (ch == '"') break;
+
+		// Store character
+		if (charCount >= strSize) {
+			strSize *= 2;
+			str = realloc(str, strSize * sizeof(char));
+		}
+
+		str[charCount++] = ch;
+		parser->current++;
 	}
 
-	// Make room for the null terminator.
+	parser->current++; // Consume the closing "
+
+	// Null-terminate the string
 	if (charCount >= strSize) {
-		strSize += 1;
-		str = realloc(str, strSize * sizeof(char));
+		str = realloc(str, (strSize + 1) * sizeof(char));
 	}
-
 	str[charCount] = '\0';
 
-	// Return the captured string'
 	LiteralExpr stringLiteral;
 	stringLiteral.type = STRING;
 	stringLiteral.base = (Expr){ .type = LITERAL };
@@ -216,6 +216,7 @@ ParserError parseNumber(Parser *parser, LiteralExpr *expr) {
 	literal.type = NUMBER;
 	literal.number = atof(number);
 	free(number);
+	*expr = literal;
 
 	maybeError.errorType = NONE;
 	return maybeError;
@@ -259,18 +260,15 @@ ParserError parseIdentifier(Parser *parser, IdentifierExpr *expr) {
 	return maybeError;
 }
 
-void addExpr(Parser *parser, Expr *expr) {
-	if (parser->exprsCount >= parser->exprsSize) {
-		parser->exprsSize *= 2;
-		parser->exprs = realloc(parser->exprs, parser->exprsSize * sizeof(Expr *));
-	}
-
-	parser->exprs[parser->current++] = expr;
-}
-
 ParserError parseExpr(Parser *parser, Expr **expr) {
 	ParserError err;
 	consumeWhitespace(parser);
+
+	if (parser->current >= parser->sourceLength) {
+		*expr = NULL;
+		err.errorType = NONE;
+		return err;
+	}
 
 	char ch = parser->source[parser->current];
 
@@ -294,8 +292,10 @@ ParserError parseExpr(Parser *parser, Expr **expr) {
 		default:
 		if (isdigit(ch)) {
 			maybeErr = parseNumber(parser, &exp.literal);
+			*expr = (Expr *)&exp.literal;
 		} else if (isalpha(ch)) {
 			maybeErr = parseIdentifier(parser, &exp.identifier);
+			*expr = (Expr *)&exp.identifier;
 		} else {
 			maybeErr.errorType = UNEXPECTED_CHAR;
 			maybeErr.line = parser->line;
@@ -312,6 +312,15 @@ ParserError parseExpr(Parser *parser, Expr **expr) {
 
 	err.errorType = NONE;
 	return err;
+}
+
+void addExpr(Parser *parser, Expr *expr) {
+	if (parser->exprsCount >= parser->exprsSize) {
+		parser->exprsSize *= 2;
+		parser->exprs = realloc(parser->exprs, parser->exprsSize * sizeof(Expr *));
+	}
+
+	parser->exprs[parser->exprsCount++] = expr;
 }
 
 ParserError parse(const char *source, size_t *tokensSize, Expr ***resultExprs) {
@@ -337,7 +346,9 @@ ParserError parse(const char *source, size_t *tokensSize, Expr ***resultExprs) {
 			return maybeErr;
 		}
 
-		addExpr(&parser, expr);
+		if (expr) {
+			addExpr(&parser, expr);
+		}
 	}
 
 	*resultExprs = parser.exprs;

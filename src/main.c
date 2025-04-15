@@ -29,6 +29,16 @@ char *readFile(char *fileName) {
 }
 
 void reportError(ParserError err) {
+	switch (err.errorType) {
+		case UNEXPECTED_CHAR:
+		printf("Unexpected character at %lu, found %c.\n", err.line, err.ch);
+		break;
+		case MISSING_CHAR:
+		printf("Missing character at %lu, expected %c.\n", err.line, err.ch);
+		break;
+		default:
+		break;
+	}
 	return;
 }
 
@@ -43,7 +53,31 @@ void run(char *source) {
 	}
 
 	for (int i = 0; i < exprCount; i++) {
-		freeExpr(exprs[i]);
+		Expr *expr = exprs[i];
+
+		LiteralExpr *literal = (LiteralExpr *)expr;
+		switch (expr->type) {
+			case LITERAL:
+			switch (literal->type) {
+				case STRING:
+				printf("Literal %s\n", literal->string);
+				break;
+				case NUMBER:
+				printf("Literal %f\n", literal->number);
+				break;
+				case BOOLEAN:
+				break;
+			}
+		 	break;
+			case LIST:
+			printf("List %lu\n", ((ListExpr *)expr)->exprsCount);
+			break;
+			case IDENTIFIER:
+			printf("Identifier '%s'\n", ((IdentifierExpr *)expr)->name);
+			break;
+		}
+
+		freeExpr(expr);
 	}
 	free(exprs);
 }
