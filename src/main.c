@@ -5,6 +5,34 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+void printExpr(Expr *expr) {
+    switch (expr->type) {
+        case LITERAL:
+            switch (expr->literal.type) {
+                case STRING:
+                    printf("Literal %s\n", expr->literal.string);
+                    break;
+                case NUMBER:
+                    printf("Literal %f\n", expr->literal.number);
+                    break;
+                case BOOLEAN:
+                    break;
+            }
+            break;
+        case LIST:
+            printf("List element count: %lu\n", expr->list.exprsCount);
+            
+            for (int i = 0; i < expr->list.exprsCount; i++) {
+                printf("| ");
+                printExpr(expr->list.exprs[i]); 
+            }
+            break;
+        case IDENTIFIER:
+            printf("Identifier '%s'\n", expr->identifier.name);
+            break;
+    }
+}
+
 char *readFile(char *fileName) {
     FILE *fp = fopen(fileName, "r");
     if (!fp) {
@@ -54,28 +82,7 @@ void run(char *source) {
 
     for (int i = 0; i < exprCount; i++) {
         Expr *expr = exprs[i];
-
-        switch (expr->type) {
-            case LITERAL:
-                switch (expr->literal.type) {
-                    case STRING:
-                        printf("Literal %s\n", expr->literal.string);
-                        break;
-                    case NUMBER:
-                        printf("Literal %f\n", expr->literal.number);
-                        break;
-                    case BOOLEAN:
-                        break;
-                }
-                break;
-            case LIST:
-                printf("List %lu\n", expr->list.exprsCount);
-                break;
-            case IDENTIFIER:
-                printf("Identifier '%s'\n", expr->identifier.name);
-                break;
-        }
-
+        printExpr(expr);
         freeExpr(expr);
     }
     free(exprs);

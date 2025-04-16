@@ -45,4 +45,5 @@ typedef struct Expr {
     };
 } Expr;
 
+void printExpr(Expr *expr);
 void freeExpr(Expr *expr);
