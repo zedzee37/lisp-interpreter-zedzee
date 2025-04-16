@@ -107,7 +107,7 @@ ParserError parseListExpr(Parser *parser, Expr *expr) {
 
         char ch = parser->source[parser->current]; 
         
-        if (ch != ')') {
+        if (ch == ')') {
             parser->current++;
             consumeWhitespace(parser);
             break;
