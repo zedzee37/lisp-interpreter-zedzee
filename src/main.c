@@ -31,10 +31,10 @@ char *readFile(char *fileName) {
 void reportError(ParserError err) {
     switch (err.errorType) {
         case UNEXPECTED_CHAR:
-            printf("Unexpected character at %lu, found %c.\n", err.line, err.ch);
+            printf("Unexpected character at %lu:%lu, found %c.\n", err.line, err.where, err.ch);
             break;
         case MISSING_CHAR:
-            printf("Missing character at %lu, expected %c.\n", err.line, err.ch);
+            printf("Missing character at %lu%lu, expected %c.\n", err.line, err.where, err.ch);
             break;
         default:
             break;

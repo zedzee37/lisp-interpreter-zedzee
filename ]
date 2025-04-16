@@ -89,8 +89,10 @@ ParserError parseListExpr(Parser *parser, Expr *expr) {
     while (parser->current < parser->sourceLength) {
         consumeWhitespace(parser);
 
+        char before = parser->source[parser->current];
         Expr *expr;
         ParserError err = parseExpr(parser, &expr);
+        printf("b4: %c, aftr: %c\n", before, parser->source[parser->current]);
 
         if (err.errorType != NONE) {
             free(listExpr.exprs);
@@ -271,6 +273,7 @@ ParserError parseIdentifier(Parser *parser, Expr *expr) {
 
 ParserError parseExpr(Parser *parser, Expr **expr) {
     ParserError err;
+    consumeWhitespace(parser);
 
     if (parser->current >= parser->sourceLength) {
         *expr = NULL;
@@ -339,7 +342,6 @@ ParserError parse(const char *source, size_t *tokensSize, Expr ***resultExprs) {
         .exprsCount = 0
     };
 
-    consumeWhitespace(&parser);
     while (parser.current < parser.sourceLength) {
         Expr *expr;
         ParserError maybeErr = parseExpr(&parser, &expr);
