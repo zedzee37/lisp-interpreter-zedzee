@@ -270,6 +270,8 @@ ParserError parseIdentifier(Parser *parser, Expr *expr) {
 }
 
 ParserError parseExpr(Parser *parser, Expr **expr) {
+    consumeWhitespace(parser);
+
     ParserError err;
 
     if (parser->current >= parser->sourceLength) {
