@@ -15,12 +15,9 @@ typedef enum {
 	NUMBER,
 } LiteralType;
 
-typedef struct {
-	ExprType type;
-} Expr;
+typedef struct Expr Expr;
 
 typedef struct {
-	Expr base;
 	union {
 		char *string;
 		bool boolean;
@@ -30,15 +27,22 @@ typedef struct {
 } LiteralExpr;
 
 typedef struct {
-	Expr base;
 	Expr **exprs;
 	size_t exprsSize;
     size_t exprsCount;
 } ListExpr;
 
 typedef struct {
-	Expr base;
 	char *name;
 } IdentifierExpr;
+
+typedef struct Expr {
+	ExprType type;
+    union {
+        LiteralExpr literal;
+        ListExpr list;
+        IdentifierExpr identifier;
+    };
+} Expr;
 
 void freeExpr(Expr *expr);

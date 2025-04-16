@@ -31,13 +31,13 @@ char *readFile(char *fileName) {
 void reportError(ParserError err) {
     switch (err.errorType) {
         case UNEXPECTED_CHAR:
-        printf("Unexpected character at %lu, found %c.\n", err.line, err.ch);
-        break;
+            printf("Unexpected character at %lu, found %c.\n", err.line, err.ch);
+            break;
         case MISSING_CHAR:
-        printf("Missing character at %lu, expected %c.\n", err.line, err.ch);
-        break;
+            printf("Missing character at %lu, expected %c.\n", err.line, err.ch);
+            break;
         default:
-        break;
+            break;
     }
     return;
 }
@@ -55,26 +55,25 @@ void run(char *source) {
     for (int i = 0; i < exprCount; i++) {
         Expr *expr = exprs[i];
 
-        LiteralExpr *literal = (LiteralExpr *)expr;
         switch (expr->type) {
             case LITERAL:
-            switch (literal->type) {
-                case STRING:
-                printf("Literal %s\n", literal->string);
+                switch (expr->literal.type) {
+                    case STRING:
+                        printf("Literal %s\n", expr->literal.string);
+                        break;
+                    case NUMBER:
+                        printf("Literal %f\n", expr->literal.number);
+                        break;
+                    case BOOLEAN:
+                        break;
+                }
                 break;
-                case NUMBER:
-                printf("Literal %f\n", literal->number);
-                break;
-                case BOOLEAN:
-                break;
-            }
-            break;
             case LIST:
-            printf("List %lu\n", ((ListExpr *)expr)->exprsCount);
-            break;
+                printf("List %lu\n", expr->list.exprsCount);
+                break;
             case IDENTIFIER:
-            printf("Identifier '%s'\n", ((IdentifierExpr *)expr)->name);
-            break;
+                printf("Identifier '%s'\n", expr->identifier.name);
+                break;
         }
 
         freeExpr(expr);

@@ -6,31 +6,40 @@
 #include <stdio.h>
 #include <parser.h>
 
+bool isSpecial(char ch) {
+    return 
+    ch == '+' || ch == '-' || ch == '*' ||
+    ch == '=' || ch == '/' || ch == '%';
+}
+
+// Short for isalnum or is special
+bool isRegular(char ch) {
+    return isalnum(ch) || isSpecial(ch);
+}
+
 // parse parses the entire string into expressions, whilst parseExpr parses a single expression
-
 void freeExpr(Expr *expr) {
-    ListExpr *list = (ListExpr *)expr;
-    IdentifierExpr *identifier = (IdentifierExpr *)expr;
-    LiteralExpr *literal = (LiteralExpr *)expr;
-
     switch (expr->type) {
         case LITERAL:
-        switch (literal->type) {
-            case STRING:
-            free(literal->string);
+            switch (expr->literal.type) {
+                case STRING:
+                    free(expr->literal.string);
+                    break;
+                default:
+                    break;
+            }
             break;
-            default:
-            break;
-        }
-        break;
         case LIST:
-        // Free all exprs
-        free(list->exprs);
-        break;
+            // Free all exprs
+            for (int i = 0; i < expr->list.exprsCount; i++) {
+                freeExpr(expr->list.exprs[i]);
+            }
+            break;
         case IDENTIFIER:
-        free(identifier->name);
-        break;
+            free(expr->identifier.name);
+            break;
     }
+    free(expr);
 }
 
 void consumeWhitespace(Parser *parser) {
@@ -40,23 +49,23 @@ void consumeWhitespace(Parser *parser) {
         // Ignore whitespace, besdies \n, in which case increment the line.
         switch (ch) {
             case ' ':
-            break;
+                break;
             case '\t':
-            break;
+                break;
             case '\r':
-            break;
+                break;
             case '\n':
-            parser->line++;
-            break;
+                parser->line++;
+                break;
             default:
-            return;
+                return;
         }
 
         parser->current++;
     }
 }
 
-ParserError parseListExpr(Parser *parser, ListExpr *expr) {
+ParserError parseListExpr(Parser *parser, Expr *expr) {
     ParserError maybeErr;
     parser->current++; // consume the left parenthesis
     consumeWhitespace(parser);
@@ -70,7 +79,6 @@ ParserError parseListExpr(Parser *parser, ListExpr *expr) {
     }
 
     ListExpr listExpr;
-    listExpr.base = (Expr){ .type = LIST };
 
     listExpr.exprsSize = 2;
     listExpr.exprsCount = 0;
@@ -111,11 +119,14 @@ ParserError parseListExpr(Parser *parser, ListExpr *expr) {
         return maybeErr;
     }
 
+    expr->list = listExpr;
+    expr->type = LIST;
+
     maybeErr.errorType = NONE;
     return maybeErr;
 }
 
-ParserError parseString(Parser *parser, LiteralExpr *expr) {
+ParserError parseString(Parser *parser, Expr *expr) {
     ParserError maybeError;
 
     parser->current++; // Consume the opening "
@@ -157,15 +168,16 @@ ParserError parseString(Parser *parser, LiteralExpr *expr) {
 
     LiteralExpr stringLiteral;
     stringLiteral.type = STRING;
-    stringLiteral.base = (Expr){ .type = LITERAL };
     stringLiteral.string = str;
-    *expr = stringLiteral;
+
+    expr->type = LITERAL;
+    expr->literal = stringLiteral;
 
     maybeError.errorType = NONE;
     return maybeError;
 }
 
-ParserError parseNumber(Parser *parser, LiteralExpr *expr) {
+ParserError parseNumber(Parser *parser, Expr *expr) {
     ParserError maybeError;
 
     size_t strSize = 5;
@@ -212,17 +224,18 @@ ParserError parseNumber(Parser *parser, LiteralExpr *expr) {
     number[digitCount] = '\0';
 
     LiteralExpr literal;
-    literal.base = (Expr){ .type = LITERAL };
     literal.type = NUMBER;
     literal.number = atof(number);
     free(number);
-    *expr = literal;
+
+    expr->type = LITERAL;
+    expr->literal = literal;
 
     maybeError.errorType = NONE;
     return maybeError;
 }
 
-ParserError parseIdentifier(Parser *parser, IdentifierExpr *expr) {
+ParserError parseIdentifier(Parser *parser, Expr *expr) {
     ParserError maybeError;
 
     size_t strSize = 10;
@@ -231,7 +244,7 @@ ParserError parseIdentifier(Parser *parser, IdentifierExpr *expr) {
 
     while (
         parser->current < parser->sourceLength &&
-        isalpha(parser->source[parser->current])
+        isRegular(parser->source[parser->current])
     ) {
         char ch = parser->source[parser->current++];
 
@@ -252,9 +265,10 @@ ParserError parseIdentifier(Parser *parser, IdentifierExpr *expr) {
     str[charCount] = '\0';
 
     IdentifierExpr identifier;
-    identifier.base = (Expr){ .type = IDENTIFIER };
     identifier.name = str;
-    *expr = identifier;
+
+    expr->type = IDENTIFIER;
+    expr->identifier = identifier;
 
     maybeError.errorType = NONE;
     return maybeError;
@@ -270,45 +284,38 @@ ParserError parseExpr(Parser *parser, Expr **expr) {
         return err;
     }
 
+    Expr *e = malloc(sizeof(Expr));
     char ch = parser->source[parser->current];
-
-    union {
-        ListExpr list;
-        LiteralExpr literal;
-        IdentifierExpr identifier;
-    } exp;
 
     ParserError maybeErr;
     *expr = NULL;
     switch (ch) {
         case '(':
-        maybeErr = parseListExpr(parser, &exp.list);
-        *expr = (Expr *)&exp.list;
-        break;
+            maybeErr = parseListExpr(parser, e);
+            break;
         case '"':
-        maybeErr = parseString(parser, &exp.literal);
-        *expr = (Expr *)&exp.literal;
-        break;
+            maybeErr = parseString(parser, e);
+            break;
         default:
-        if (isdigit(ch)) {
-            maybeErr = parseNumber(parser, &exp.literal);
-            *expr = (Expr *)&exp.literal;
-        } else if (isalpha(ch)) {
-            maybeErr = parseIdentifier(parser, &exp.identifier);
-            *expr = (Expr *)&exp.identifier;
-        } else {
-            maybeErr.errorType = UNEXPECTED_CHAR;
-            maybeErr.line = parser->line;
-            maybeErr.where = parser->current;
-            maybeErr.ch = ch;
-        }
+            if (isdigit(ch)) {
+                maybeErr = parseNumber(parser, e);
+            } else if (isalpha(ch) || isSpecial(ch)) {
+                maybeErr = parseIdentifier(parser, e);
+            } else {
+                maybeErr.errorType = UNEXPECTED_CHAR;
+                maybeErr.line = parser->line;
+                maybeErr.where = parser->current;
+                maybeErr.ch = ch;
+            }
 
-        break;
+            break;
     }
 
     if (maybeErr.errorType != NONE) {
         return maybeErr;
     }
+
+    *expr = e;
 
     err.errorType = NONE;
     return err;
@@ -317,7 +324,7 @@ ParserError parseExpr(Parser *parser, Expr **expr) {
 void addExpr(Parser *parser, Expr *expr) {
     if (parser->exprsCount >= parser->exprsSize) {
         parser->exprsSize *= 2;
-        parser->exprs = realloc(parser->exprs, parser->exprsSize * sizeof(Expr *));
+        parser->exprs = realloc(parser->exprs, parser->exprsSize * sizeof(Expr **));
     }
 
     parser->exprs[parser->exprsCount++] = expr;
