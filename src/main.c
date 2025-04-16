@@ -105,11 +105,10 @@ void runPrompt() {
     while (true) {
         printf(" > ");
         size_t len = getline(&input, &size, stdin);
-        run(input);
-
         if (len <= 1) {
             break;
         }
+        run(input);
     }
 
     free(input);

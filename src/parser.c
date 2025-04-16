@@ -1,4 +1,4 @@
-#include "expr.h"
+#include <expr.h>
 #include <ctype.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -34,6 +34,7 @@ void freeExpr(Expr *expr) {
             for (int i = 0; i < expr->list.exprsCount; i++) {
                 freeExpr(expr->list.exprs[i]);
             }
+            free(expr->list.exprs);
             break;
         case IDENTIFIER:
             free(expr->identifier.name);
