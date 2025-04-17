@@ -26,16 +26,30 @@ HashTable *initHashTable() {
 }
 
 void *hashTableGet(const HashTable *table, const char *key) {
+    Entry *entry = findEntry(table->entries, table->size, key);
+    return entry->value;
 }
 
 void hashTableSet(HashTable *table, const char *key, void *value) {
     if (hashTableLoad(table) >= MAX_HASH_TABLE_LOAD) {
         hashTableGrow(table);
     }
+    Entry *entry = findEntry(table->entries, table->size, key);
+    entry->value = value;
 }
 
-void hashTableGrow(HashTable *table) {
+void hashTableDelete(HashTable *table, const char *key) {
+    if (hashTableLoad(table) >= MAX_HASH_TABLE_LOAD) {
+        hashTableGrow(table);
+    }
+    Entry *entry = findEntry(table->entries, table->size, key);
+    entry->str = NULL;
+    entry->value = NULL;
+}
+
+static void hashTableGrow(HashTable *table) {
     size_t oldSize = table->size;
+    
     table->size *= 2;
     Entry *entries = calloc(table->size, sizeof(Entry));
 
@@ -46,17 +60,23 @@ void hashTableGrow(HashTable *table) {
             continue;
         }
 
-
-        size_t strLen = strlen(e.str);
-        uint32_t hash = hashString(e.str, strLen);
-        entries[hash % table->size] = (Entry) { e.str, e.value };
+        Entry *entryAddress = findEntry(entries, table->size, e.str);
+        *entryAddress = (Entry){ e.str, e.value };
     }
 
     free(table->entries);
     table->entries = entries;
 }
 
-Entry *findEntry(const Entry *entries, const char *key);
+static Entry *findEntry(const Entry *entries, size_t size, const char *key) {
+    uint32_t idx = hashString(key, strlen(key)) % size;
+
+    while (entries[idx].str != NULL || strcmp(entries[idx].str, key) != 0) {
+        idx = (idx + 1) % size; 
+    }
+
+    return &entries[idx];
+}
 
 void freeHashTable(HashTable *table) {
     free(table); 

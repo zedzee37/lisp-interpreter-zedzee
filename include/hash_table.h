@@ -22,7 +22,8 @@ HashTable *initHashTable();
 void freeHashTable(HashTable *table);
 void hashTableSet(HashTable *table, const char *key, void *value);
 void *hashTableGet(const HashTable *table, const char *key);
-void hashTableGrow(HashTable *table);
+void hashTableDelete(HashTable *table, const char *key);
+static void hashTableGrow(HashTable *table);
 static float hashTableLoad(const HashTable *table);
-static Entry *findEntry(const Entry *entries, const char *key);
+static Entry *findEntry(const Entry *entries, size_t size, const char *key);
 
