@@ -5,3 +5,5 @@
 typedef struct {
     Expr **exprs;
 } Interpreter;
+
+void eval(Expr *expr);
