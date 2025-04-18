@@ -9,6 +9,7 @@ enum {
     STRING_ID,
     FUNCTION_ID,
     CFUNCTION_ID,
+    ERROR_ID,
 };
 
 typedef struct {
@@ -38,3 +39,13 @@ typedef struct {
     CFunc fn;
 } CFunctionObject;
 
+typedef struct {
+    const char *msg;
+} ErrorObject;
+
+Object *equals(Object *objects, size_t size);
+Object *add(Object *objects, size_t size);
+Object *subtract(Object *objects, size_t size);
+Object *divide(Object *objects, size_t size);
+Object *multiply(Object *objects, size_t size);
+Object *equality(Object *objects, size_t size);

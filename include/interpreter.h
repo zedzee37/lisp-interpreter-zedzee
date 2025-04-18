@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hash_table.h"
+#include "object.h"
 #include <expr.h>
 
 typedef enum {
@@ -23,6 +24,7 @@ typedef struct {
     StackFrame *globalFrame;
 } Interpreter;
 
+void setVariable(StackFrame *frame, char *key, Object *object);
 void setGlobalFrame(StackFrame *frame);
 void run(Expr **exprs);
 void eval(Expr *expr);
