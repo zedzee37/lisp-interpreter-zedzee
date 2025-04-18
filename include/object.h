@@ -14,8 +14,11 @@ enum {
 
 typedef struct {
     uint32_t objectId;
+    uint32_t refCount;
     void *value;
 } Object;
+
+void release(Object *obj);
 
 typedef struct {
     double num;
