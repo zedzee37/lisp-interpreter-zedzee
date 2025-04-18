@@ -17,13 +17,13 @@ typedef struct {
     Entry *entries;
 } HashTable;
 
-static uint32_t hashString(const char *str, size_t length);
+uint32_t hashString(const char *str, size_t length);
 HashTable *initHashTable();
 void freeHashTable(HashTable *table);
 void hashTableSet(HashTable *table, const char *key, void *value);
 void *hashTableGet(const HashTable *table, const char *key);
 void hashTableDelete(HashTable *table, const char *key);
-static void hashTableGrow(HashTable *table);
-static float hashTableLoad(const HashTable *table);
-static Entry *findEntry(const Entry *entries, size_t size, const char *key);
+void hashTableGrow(HashTable *table);
+float hashTableLoad(const HashTable *table);
+Entry *findEntry(const Entry *entries, size_t size, const char *key);
 

@@ -5,7 +5,7 @@
 #include <string.h>
 
 // FNV-1a hashing algorithm
-static uint32_t hashString(const char* str, size_t length) {
+uint32_t hashString(const char* str, size_t length) {
     uint32_t hash = 2166136261u;
     for (int i = 0; i < length; i++) {
         hash ^= (uint8_t)str[i];
@@ -14,9 +14,10 @@ static uint32_t hashString(const char* str, size_t length) {
     return hash;
 }
 
-static float hashTableLoad(const HashTable *table) {
+float hashTableLoad(const HashTable *table) {
     return (float)table->count / (float)table->size;
 }
+
 HashTable *initHashTable() {
     HashTable *table = malloc(sizeof(HashTable));
     table->size = HASH_TABLE_START_SIZE;
@@ -47,7 +48,7 @@ void hashTableDelete(HashTable *table, const char *key) {
     entry->value = NULL;
 }
 
-static void hashTableGrow(HashTable *table) {
+void hashTableGrow(HashTable *table) {
     size_t oldSize = table->size;
     
     table->size *= 2;
@@ -68,10 +69,10 @@ static void hashTableGrow(HashTable *table) {
     table->entries = entries;
 }
 
-static Entry *findEntry(const Entry *entries, size_t size, const char *key) {
+Entry *findEntry(const Entry *entries, size_t size, const char *key) {
     uint32_t idx = hashString(key, strlen(key)) % size;
 
-    while (entries[idx].str != NULL || strcmp(entries[idx].str, key) != 0) {
+    while (entries[idx].str != NULL && strcmp(entries[idx].str, key) != 0) {
         idx = (idx + 1) % size; 
     }
 

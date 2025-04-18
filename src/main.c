@@ -1,4 +1,5 @@
 #include "expr.h"
+#include "hash_table.h"
 #include "parser.h"
 #include <stddef.h>
 #include <stdio.h>
@@ -115,13 +116,12 @@ void runPrompt() {
 }
 
 int main(int argc, char **argv) {
-    if (argc == 2) {
-        runFile(argv[1]);
-    } else if (argc == 1)  {
-        runPrompt();
-    } else {
-        printf("Expects either 1 or 2 args.\n");
-    }
-
+    // if (argc == 2) {
+    //     runFile(argv[1]);
+    // } else if (argc == 1)  {
+    //     runPrompt();
+    // } else {
+    //     printf("Expects either 1 or 2 args.\n");
+    // }
     return 0;
 }
