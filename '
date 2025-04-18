@@ -1,0 +1,25 @@
+#include "hash_table.h"
+#include "object.h"
+#include <interpreter.h>
+#include <stdlib.h>
+
+void setVariable(StackFrame *frame, char *key, Object *object) {
+    hashTableSet(frame->table, key, object);
+}
+
+Object *createCFunc(CFunc func, size_t argCount) {
+    CFunctionObject *cFuncObject = malloc(sizeof(CFunctionObject));
+}
+
+void setGlobalFrame(StackFrame *frame) {
+}
+
+void run(Expr **exprs) {
+    Interpreter *interpreter = malloc(sizeof(Interpreter));
+    interpreter->exprs = exprs;
+    interpreter->globalFrame = malloc(sizeof(StackFrame));
+    setGlobalFrame(interpreter->globalFrame);
+}
+
+void eval(Expr *expr) {
+}

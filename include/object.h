@@ -49,3 +49,6 @@ Object *subtract(Object *objects, size_t size);
 Object *divide(Object *objects, size_t size);
 Object *multiply(Object *objects, size_t size);
 Object *equality(Object *objects, size_t size);
+Object *print(Object *objects, size_t size);
+
+#define PI 3.14159
