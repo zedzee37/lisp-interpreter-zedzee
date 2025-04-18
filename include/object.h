@@ -9,7 +9,6 @@ enum {
     STRING_ID,
     FUNCTION_ID,
     CFUNCTION_ID,
-    OBJECT_ID
 };
 
 typedef struct {
