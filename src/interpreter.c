@@ -40,6 +40,25 @@ void setGlobalFrame(StackFrame *frame) {
     setVariable(frame, "pi", createNumberObject(PI));
 }
 
+void closeStackFrame(StackFrame *frame) {
+    for (int i = 0; i < frame->table->size; i++) {
+        Entry entry = frame->table->entries[i];
+        
+        if (entry.str == NULL) {
+            continue;
+        }
+
+        Object *obj = (Object *)entry.value; 
+        obj->refCount--;
+        
+        if (obj->refCount <= 0) {
+            release(obj);
+        }
+    }
+    freeHashTable(frame->table);
+    free(frame);
+}
+
 void run(Expr **exprs) {
     Interpreter *interpreter = malloc(sizeof(Interpreter));
     interpreter->exprs = exprs;

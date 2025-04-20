@@ -26,5 +26,6 @@ typedef struct {
 
 void setVariable(StackFrame *frame, char *key, Object *object);
 void setGlobalFrame(StackFrame *frame);
+void closeStackFrame(StackFrame *frame);
 void run(Expr **exprs);
 void eval(Expr *expr);
