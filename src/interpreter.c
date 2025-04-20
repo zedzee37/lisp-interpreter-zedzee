@@ -64,6 +64,9 @@ void run(Expr **exprs) {
     interpreter->exprs = exprs;
     interpreter->globalFrame = malloc(sizeof(StackFrame));
     setGlobalFrame(interpreter->globalFrame);
+
+    closeStackFrame(interpreter->globalFrame);
+    free(interpreter);
 }
 
 void eval(Expr *expr) {
