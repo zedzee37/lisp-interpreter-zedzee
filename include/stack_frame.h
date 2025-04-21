@@ -3,7 +3,7 @@
 #include <hash_table.h>
 
 typedef struct StackFrame {
-    struct StackFrame *nextFrame;
+    struct StackFrame *prevFrame;
     HashTable *table;
 } StackFrame;
 

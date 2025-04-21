@@ -166,6 +166,7 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
             }
 
             StackFrame *newFrame = initStackFrame();
+            newFrame->prevFrame = stackFrame;
 
             if (firstObj->objectId == CFUNCTION_ID) {
                 CFunctionObject *cFuncObject = firstObj->value;
