@@ -58,7 +58,7 @@ Object *createStringObject(char *str) {
     return obj;
 }
 
-Object *createErrorEntry(const char *msg) {
+Object *createErrorObject(const char *msg) {
     ErrorObject *errObject = malloc(sizeof(ErrorObject));
     errObject->msg = msg;
 
@@ -92,7 +92,6 @@ void closeStackFrame(StackFrame *frame) {
         obj->refCount--;
         
         if (obj->refCount <= 0) {
-            printf("released\n");
             release(obj);
         }
     }
@@ -147,7 +146,7 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
             identifierObj = hashTableGet(stackFrame->table, expr->identifier.name);
 
             if (!identifierObj) {
-                result = createErrorEntry("Did not expect identifier.");
+                result = createErrorObject("Did not expect identifier.");
                 break;
             }
 
@@ -155,13 +154,13 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
             break;
         case LIST:
             if (firstExpr->type != IDENTIFIER) {
-                result = createErrorEntry("Expected identifier in list");
+                result = createErrorObject("Expected identifier in list");
                 break;
             }
 
             Object *firstObj = eval(firstExpr, stackFrame);
             if (firstObj->objectId != FUNCTION_ID && firstObj->objectId != CFUNCTION_ID) {
-                result = createErrorEntry("Expected function in list");
+                result = createErrorObject("Expected function in list");
                 break;
             }
 
@@ -205,6 +204,17 @@ Object *equality(StackFrame *frame, Expr **exprs, size_t size) {
 }
 
 Object *print(StackFrame *frame, Expr **exprs, size_t size) {
-    printf("Guh\n");
+    if (size != 1) {
+        return createErrorObject("wanted 1 param\n"); 
+    }
+    Object *toPrint = eval(exprs[0], frame);
+
+    if (toPrint->objectId != STRING_ID) {
+        return createErrorObject("expected string\n"); 
+    }
+
+    StringObject *strObj = (StringObject *)toPrint->value;
+    printf("%s\n", strObj->str);
+
     return createNumberObject(0);
 }
