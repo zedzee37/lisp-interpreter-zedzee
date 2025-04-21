@@ -3,6 +3,7 @@
 #include "expr.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <stack_frame.h>
 
 enum {
     NUMBER_ID,
@@ -36,7 +37,7 @@ typedef struct {
     size_t argCount;
 } FunctionObject;
 
-typedef Object *(*CFunc)(Expr **, size_t);
+typedef Object *(*CFunc)(StackFrame *, Expr **, size_t);
 
 typedef struct {
     size_t argCount;
@@ -47,12 +48,12 @@ typedef struct {
     const char *msg;
 } ErrorObject;
 
-Object *equals(Expr **exprs, size_t size);
-Object *add(Expr **exprs, size_t size);
-Object *subtract(Expr **exprs, size_t size);
-Object *divide(Expr **exprs, size_t size);
-Object *multiply(Expr **exprs, size_t size);
-Object *equality(Expr **exprs, size_t size);
-Object *print(Expr **exprs, size_t size);
+Object *equals(StackFrame *frame, Expr **exprs, size_t size);
+Object *add(StackFrame *frame, Expr **exprs, size_t size);
+Object *subtract(StackFrame *frame, Expr **exprs, size_t size);
+Object *divide(StackFrame *frame, Expr **exprs, size_t size);
+Object *multiply(StackFrame *frame, Expr **exprs, size_t size);
+Object *equality(StackFrame *frame, Expr **exprs, size_t size);
+Object *print(StackFrame *frame, Expr **exprs, size_t size);
 
 #define PI 3.14159

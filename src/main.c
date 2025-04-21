@@ -1,5 +1,5 @@
 #include "expr.h"
-#include "hash_table.h"
+#include "interpreter.h"
 #include "parser.h"
 #include <stddef.h>
 #include <stdio.h>
@@ -59,10 +59,10 @@ char *readFile(char *fileName) {
 
 void reportError(ParserError err) {
     switch (err.errorType) {
-        case UNEXPECTED_CHAR:
+        case PARSER_UNEXPECTED_CHAR:
             printf("Unexpected character at %lu:%lu, found %c.\n", err.line, err.where, err.ch);
             break;
-        case MISSING_CHAR:
+        case PARSER_MISSING_CHAR:
             printf("Missing character at %lu%lu, expected %c.\n", err.line, err.where, err.ch);
             break;
         default:
@@ -76,16 +76,21 @@ void run(char *source) {
     Expr **exprs;
     ParserError err = parse(source, &exprCount, &exprs);
 
-    if (err.errorType != NONE) {
+    if (err.errorType != PARSER_NONE) {
         reportError(err);
         return;
     }
 
-    for (int i = 0; i < exprCount; i++) {
-        Expr *expr = exprs[i];
-        printExpr(expr);
-        freeExpr(expr);
+    InterpreterError interpreterErr = interpret(exprs, exprCount);
+    
+    if (interpreterErr.errorType != INTERPRETER_NONE) {
+        printf("%s\n", interpreterErr.msg);
     }
+
+    for (int i = 0; i < exprCount; i++) {
+        freeExpr(exprs[i]);
+    }
+
     free(exprs);
 }
 

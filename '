@@ -92,7 +92,6 @@ void closeStackFrame(StackFrame *frame) {
         obj->refCount--;
         
         if (obj->refCount <= 0) {
-            printf("released\n");
             release(obj);
         }
     }
@@ -117,8 +116,6 @@ InterpreterError interpret(Expr **exprs, size_t exprsCount) {
             maybeErr.msg = ((ErrorObject *)result->value)->msg;
             break;
         }
-
-        release(result);
     }
 
     closeStackFrame(globalFrame);
@@ -160,6 +157,7 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
             }
 
             Object *firstObj = eval(firstExpr, stackFrame);
+            printf("%d\n", firstObj->objectId);
             if (firstObj->objectId != FUNCTION_ID && firstObj->objectId != CFUNCTION_ID) {
                 result = createErrorEntry("Expected function in list");
                 break;

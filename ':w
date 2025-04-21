@@ -8,12 +8,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-StackFrame *initStackFrame() {
-    StackFrame *frame = malloc(sizeof(StackFrame));
-    frame->table = initHashTable();
-    return frame;
-}
-
 void setVariable(StackFrame *frame, char *key, Object *object) {
     object->refCount++;
     hashTableSet(frame->table, key, object);
@@ -92,7 +86,6 @@ void closeStackFrame(StackFrame *frame) {
         obj->refCount--;
         
         if (obj->refCount <= 0) {
-            printf("released\n");
             release(obj);
         }
     }
@@ -104,7 +97,8 @@ InterpreterError interpret(Expr **exprs, size_t exprsCount) {
     InterpreterError maybeErr;
     maybeErr.errorType = INTERPRETER_NONE;
 
-    StackFrame *globalFrame = initStackFrame();
+    StackFrame *globalFrame = malloc(sizeof(StackFrame));
+    globalFrame->table = initHashTable();
     setGlobalFrame(globalFrame);
 
     for (int i = 0; i < exprsCount; i++) {
@@ -117,8 +111,6 @@ InterpreterError interpret(Expr **exprs, size_t exprsCount) {
             maybeErr.msg = ((ErrorObject *)result->value)->msg;
             break;
         }
-
-        release(result);
     }
 
     closeStackFrame(globalFrame);
@@ -128,7 +120,7 @@ InterpreterError interpret(Expr **exprs, size_t exprsCount) {
 Object *eval(Expr *expr, StackFrame *stackFrame) {
     Object *result;
 
-    Object *identifierObj;
+    Entry *identifierEntry;
     Expr *firstExpr = expr->list.exprs[0];
     switch (expr->type) {
         case LITERAL:
@@ -144,14 +136,14 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
             }
             break;
         case IDENTIFIER:
-            identifierObj = hashTableGet(stackFrame->table, expr->identifier.name);
+            identifierEntry = hashTableGet(stackFrame->table, expr->identifier.name);
 
-            if (!identifierObj) {
+            if (!identifierEntry->str) {
                 result = createErrorEntry("Did not expect identifier.");
                 break;
             }
 
-            result = identifierObj;
+            result = identifierEntry->value;
             break;
         case LIST:
             if (firstExpr->type != IDENTIFIER) {
@@ -160,12 +152,13 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
             }
 
             Object *firstObj = eval(firstExpr, stackFrame);
+            printf("%d\n", firstObj->objectId);
             if (firstObj->objectId != FUNCTION_ID && firstObj->objectId != CFUNCTION_ID) {
                 result = createErrorEntry("Expected function in list");
                 break;
             }
 
-            StackFrame *newFrame = initStackFrame();
+            StackFrame *newFrame = malloc(sizeof(StackFrame));
 
             if (firstObj->objectId == CFUNCTION_ID) {
                 CFunctionObject *cFuncObject = firstObj->value;
@@ -204,6 +197,6 @@ Object *equality(StackFrame *frame, Expr **exprs, size_t size) {
 }
 
 Object *print(StackFrame *frame, Expr **exprs, size_t size) {
-    printf("Guh\n");
+    printf("Guh");
     return createNumberObject(0);
 }

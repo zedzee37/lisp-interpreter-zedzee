@@ -73,7 +73,7 @@ ParserError parseListExpr(Parser *parser, Expr *expr) {
     consumeWhitespace(parser);
 
     if (parser->source[parser->current] == ')') {
-        maybeErr.errorType = UNEXPECTED_CHAR;
+        maybeErr.errorType = PARSER_UNEXPECTED_CHAR;
         maybeErr.line = parser->line;
         maybeErr.ch = ')';
         maybeErr.where = parser->current;
@@ -93,7 +93,7 @@ ParserError parseListExpr(Parser *parser, Expr *expr) {
         Expr *expr;
         ParserError err = parseExpr(parser, &expr);
 
-        if (err.errorType != NONE) {
+        if (err.errorType != PARSER_NONE) {
             free(listExpr.exprs);
             return err;
         }
@@ -118,7 +118,7 @@ ParserError parseListExpr(Parser *parser, Expr *expr) {
     expr->list = listExpr;
     expr->type = LIST;
 
-    maybeErr.errorType = NONE;
+    maybeErr.errorType = PARSER_NONE;
     return maybeErr;
 }
 
@@ -134,7 +134,7 @@ ParserError parseString(Parser *parser, Expr *expr) {
     while (true) {
         if (parser->current >= parser->sourceLength) {
             free(str);
-            maybeError.errorType = MISSING_CHAR;
+            maybeError.errorType = PARSER_MISSING_CHAR;
             maybeError.line = parser->line;
             maybeError.ch = '"';
             maybeError.where = parser->current;
@@ -169,7 +169,7 @@ ParserError parseString(Parser *parser, Expr *expr) {
     expr->type = LITERAL;
     expr->literal = stringLiteral;
 
-    maybeError.errorType = NONE;
+    maybeError.errorType = PARSER_NONE;
     return maybeError;
 }
 
@@ -190,7 +190,7 @@ ParserError parseNumber(Parser *parser, Expr *expr) {
             if (ch == '.') {
                 if (foundDecimal) {
                     free(number);
-                    maybeError.errorType = UNEXPECTED_CHAR;
+                    maybeError.errorType = PARSER_UNEXPECTED_CHAR;
                     maybeError.where = parser->current;
                     maybeError.line = parser->line;
                     maybeError.ch = '.';
@@ -227,7 +227,7 @@ ParserError parseNumber(Parser *parser, Expr *expr) {
     expr->type = LITERAL;
     expr->literal = literal;
 
-    maybeError.errorType = NONE;
+    maybeError.errorType = PARSER_NONE;
     return maybeError;
 }
 
@@ -266,7 +266,7 @@ ParserError parseIdentifier(Parser *parser, Expr *expr) {
     expr->type = IDENTIFIER;
     expr->identifier = identifier;
 
-    maybeError.errorType = NONE;
+    maybeError.errorType = PARSER_NONE;
     return maybeError;
 }
 
@@ -277,7 +277,7 @@ ParserError parseExpr(Parser *parser, Expr **expr) {
 
     if (parser->current >= parser->sourceLength) {
         *expr = NULL;
-        err.errorType = NONE;
+        err.errorType = PARSER_NONE;
         return err;
     }
 
@@ -299,7 +299,7 @@ ParserError parseExpr(Parser *parser, Expr **expr) {
             } else if (isalpha(ch) || isSpecial(ch)) {
                 maybeErr = parseIdentifier(parser, e);
             } else {
-                maybeErr.errorType = UNEXPECTED_CHAR;
+                maybeErr.errorType = PARSER_UNEXPECTED_CHAR;
                 maybeErr.line = parser->line;
                 maybeErr.where = parser->current;
                 maybeErr.ch = ch;
@@ -308,13 +308,13 @@ ParserError parseExpr(Parser *parser, Expr **expr) {
             break;
     }
 
-    if (maybeErr.errorType != NONE) {
+    if (maybeErr.errorType != PARSER_NONE) {
         return maybeErr;
     }
 
     *expr = e;
 
-    err.errorType = NONE;
+    err.errorType = PARSER_NONE;
     return err;
 }
 
@@ -347,7 +347,7 @@ ParserError parse(const char *source, size_t *tokensSize, Expr ***resultExprs) {
         Expr *expr;
         ParserError maybeErr = parseExpr(&parser, &expr);
 
-        if (maybeErr.errorType != NONE) {
+        if (maybeErr.errorType != PARSER_NONE) {
             return maybeErr;
         }
 
@@ -358,6 +358,6 @@ ParserError parse(const char *source, size_t *tokensSize, Expr ***resultExprs) {
 
     *resultExprs = parser.exprs;
     *tokensSize = parser.exprsCount;
-    err.errorType = NONE;
+    err.errorType = PARSER_NONE;
     return err;
 }

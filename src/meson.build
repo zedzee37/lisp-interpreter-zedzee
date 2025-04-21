@@ -1,7 +1,9 @@
 files = [
   'main.c',
   'parser.c',
-  'hash_table.c'
+  'hash_table.c',
+  'interpreter.c',
+  'object.c'
 ]
 
 include_dirs = include_directories('../include')

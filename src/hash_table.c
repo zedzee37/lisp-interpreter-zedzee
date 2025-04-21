@@ -1,6 +1,7 @@
 #include "hash_table.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -37,6 +38,7 @@ void hashTableSet(HashTable *table, const char *key, void *value) {
     }
     Entry *entry = findEntry(table->entries, table->size, key);
     entry->value = value;
+    entry->str = key;
 }
 
 void hashTableDelete(HashTable *table, const char *key) {
@@ -80,6 +82,7 @@ Entry *findEntry(const Entry *entries, size_t size, const char *key) {
 }
 
 void freeHashTable(HashTable *table) {
+    free(table->entries);
     free(table); 
 }
 

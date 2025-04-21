@@ -4,9 +4,9 @@
 #include <expr.h>
 
 typedef enum {
-	NONE,
-	UNEXPECTED_CHAR,
-    MISSING_CHAR,
+	PARSER_NONE,
+	PARSER_UNEXPECTED_CHAR,
+    PARSER_MISSING_CHAR,
 } ParserErrorType;
 
 typedef struct {
