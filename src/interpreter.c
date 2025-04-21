@@ -50,6 +50,17 @@ Object *createStringObject(char *str) {
     return obj;
 }
 
+Object *createErrorEntry(const char *msg) {
+    ErrorObject *errObject = malloc(sizeof(ErrorObject));
+    errObject->msg = msg;
+
+    Object *obj = malloc(sizeof(Object));
+    obj->objectId = ERROR_ID;
+    obj->value = errObject;
+    obj->refCount = 0;
+    return obj;
+}
+
 void setGlobalFrame(StackFrame *frame) {
     setVariable(frame, "=", createCFunc(equals, 2));
     setVariable(frame, "+", createCFunc(add, 2));
@@ -91,37 +102,56 @@ void run(Expr **exprs, size_t exprsCount) {
             continue;
         }
 
-        eval(expr);
+        eval(expr, globalFrame);
     }
 
     closeStackFrame(globalFrame);
 }
 
-Object *eval(Expr *expr) {
+Object *eval(Expr *expr, StackFrame *stackFrame) {
     Object *result;
 
-    union {
-        LiteralExpr *literal;
-        IdentifierExpr *identifier;
-        ListExpr *list;
-    } e;
+    Entry *identifierEntry;
     switch (expr->type) {
         case LITERAL:
-            e.literal = (LiteralExpr *)expr;
-            switch (e.literal->type) {
+            switch (expr->literal.type) {
                 case STRING:
-                    result = createStringObject(e.literal->string);
+                    result = createStringObject(expr->literal.string);
                     break;
                 case NUMBER:
-                    result = createNumberObject(e.literal->number);
+                    result = createNumberObject(expr->literal.number);
                     break;
                 case BOOLEAN:
                     break;
             }
             break;
         case IDENTIFIER:
+            identifierEntry = hashTableGet(stackFrame->table, expr->identifier.name);
+
+            if (!identifierEntry->str) {
+                result = createErrorEntry("Did not expect identifier.");
+                break;
+            }
+
+            result = identifierEntry->value;
             break;
         case LIST:
+            if (expr->list.exprsCount == 1) {
+                result = eval(expr->list.exprs[0], stackFrame);
+                break;
+            }
+
+            Expr *firstExpr = expr->list.exprs[0];
+            if (firstExpr->type != IDENTIFIER) {
+                result = createErrorEntry("Expected identifier in list");
+            }
+
+            Object *firstObj = eval(firstExpr, stackFrame);
+            
+            if (firstObj->objectId != FUNCTION_ID && firstObj->objectId != CFUNCTION_ID) {
+                result = createErrorEntry("Expected function in list");
+            }
+
             break;
     }
     return result;

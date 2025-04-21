@@ -36,7 +36,7 @@ typedef struct {
     size_t argCount;
 } FunctionObject;
 
-typedef Object *(*CFunc)(Object *, size_t);
+typedef Object *(*CFunc)(Expr **, size_t);
 
 typedef struct {
     size_t argCount;
@@ -47,12 +47,12 @@ typedef struct {
     const char *msg;
 } ErrorObject;
 
-Object *equals(Object *objects, size_t size);
-Object *add(Object *objects, size_t size);
-Object *subtract(Object *objects, size_t size);
-Object *divide(Object *objects, size_t size);
-Object *multiply(Object *objects, size_t size);
-Object *equality(Object *objects, size_t size);
-Object *print(Object *objects, size_t size);
+Object *equals(Expr **exprs, size_t size);
+Object *add(Expr **exprs, size_t size);
+Object *subtract(Expr **exprs, size_t size);
+Object *divide(Expr **exprs, size_t size);
+Object *multiply(Expr **exprs, size_t size);
+Object *equality(Expr **exprs, size_t size);
+Object *print(Expr **exprs, size_t size);
 
 #define PI 3.14159

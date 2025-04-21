@@ -23,4 +23,4 @@ void setVariable(StackFrame *frame, char *key, Object *object);
 void setGlobalFrame(StackFrame *frame);
 void closeStackFrame(StackFrame *frame);
 void run(Expr **exprs, size_t exprsCount);
-Object *eval(Expr *expr);
+Object *eval(Expr *expr, StackFrame *stackFrame);
