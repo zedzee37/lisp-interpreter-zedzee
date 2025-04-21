@@ -2,9 +2,12 @@
 #include "hash_table.h"
 #include "object.h"
 #include <interpreter.h>
+#include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 void setVariable(StackFrame *frame, char *key, Object *object) {
+    object->refCount++;
     hashTableSet(frame->table, key, object);
 }
 
@@ -16,6 +19,7 @@ Object *createCFunc(CFunc func, size_t argCount) {
     Object *obj = malloc(sizeof(Object));
     obj->objectId = CFUNCTION_ID;
     obj->value = cFuncObject;
+    obj->refCount = 0;
     return obj;
 }
 
@@ -26,6 +30,23 @@ Object *createNumberObject(double number) {
     Object *obj = malloc(sizeof(Object));
     obj->objectId = NUMBER_ID;
     obj->value = numberObject;
+    obj->refCount = 0;
+    return obj;
+}
+
+Object *createStringObject(char *str) {
+    size_t strLen = strlen(str);
+    char *newStr = calloc(strLen, sizeof(char));
+    strncpy(newStr, str, strLen);
+
+    StringObject *stringObject = malloc(sizeof(StringObject));
+    stringObject->str = newStr;
+    stringObject->len = strLen;
+
+    Object *obj = malloc(sizeof(Object));
+    obj->objectId = STRING_ID;
+    obj->value = stringObject;
+    obj->refCount = 0;
     return obj;
 }
 
@@ -59,15 +80,49 @@ void closeStackFrame(StackFrame *frame) {
     free(frame);
 }
 
-void run(Expr **exprs) {
-    Interpreter *interpreter = malloc(sizeof(Interpreter));
-    interpreter->exprs = exprs;
-    interpreter->globalFrame = malloc(sizeof(StackFrame));
-    setGlobalFrame(interpreter->globalFrame);
+void run(Expr **exprs, size_t exprsCount) {
+    StackFrame *globalFrame = malloc(sizeof(StackFrame));
+    setGlobalFrame(globalFrame);
 
-    closeStackFrame(interpreter->globalFrame);
-    free(interpreter);
+    for (int i = 0; i < exprsCount; i++) {
+        Expr *expr = exprs[i];
+
+        if (expr->type != LIST) {
+            continue;
+        }
+
+        eval(expr);
+    }
+
+    closeStackFrame(globalFrame);
 }
 
-void eval(Expr *expr) {
+Object *eval(Expr *expr) {
+    Object *result;
+
+    union {
+        LiteralExpr *literal;
+        IdentifierExpr *identifier;
+        ListExpr *list;
+    } e;
+    switch (expr->type) {
+        case LITERAL:
+            e.literal = (LiteralExpr *)expr;
+            switch (e.literal->type) {
+                case STRING:
+                    result = createStringObject(e.literal->string);
+                    break;
+                case NUMBER:
+                    result = createNumberObject(e.literal->number);
+                    break;
+                case BOOLEAN:
+                    break;
+            }
+            break;
+        case IDENTIFIER:
+            break;
+        case LIST:
+            break;
+    }
+    return result;
 }

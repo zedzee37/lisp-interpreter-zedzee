@@ -26,6 +26,7 @@ typedef struct {
 
 typedef struct {
     char *str;
+    size_t len;
 } StringObject;
 
 typedef struct {
