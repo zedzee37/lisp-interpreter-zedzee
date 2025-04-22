@@ -1,10 +1,24 @@
 #include "expr.h"
 #include "interpreter.h"
+#include "object.h"
 #include "parser.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+void printObj(Object *obj) {
+    switch (obj->objectId) {
+        case NUMBER_ID:
+            printf("%f\n", ((NumberObject *)obj->value)->num);
+            break;
+        case STRING_ID:
+            printf("%s\n", ((StringObject *)obj->value)->str);
+            break;
+        default:
+            break;
+    }
+}
 
 void printExpr(Expr *expr) {
     switch (expr->type) {
@@ -81,7 +95,10 @@ void run(char *source) {
         return;
     }
 
-    InterpreterError interpreterErr = interpret(exprs, exprCount);
+    Object *output;
+    InterpreterError interpreterErr = interpret(&output, exprs, exprCount);
+    printObj(output);
+    release(output);
     
     if (interpreterErr.errorType != INTERPRETER_NONE) {
         printf("%s\n", interpreterErr.msg);

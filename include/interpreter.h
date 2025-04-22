@@ -16,6 +16,6 @@ typedef struct {
     const char *msg; // Tmp
 } InterpreterError;
 
-InterpreterError interpret(Expr **exprs, size_t exprsCount);
+InterpreterError interpret(Object **outputObj, Expr **exprs, size_t exprsCount);
 Object *eval(Expr *expr, StackFrame *stackFrame);
 void setVariable(StackFrame *frame, char *key, Object *object);

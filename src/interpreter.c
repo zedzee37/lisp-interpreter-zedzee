@@ -70,14 +70,14 @@ Object *createErrorObject(const char *msg) {
 }
 
 void setGlobalFrame(StackFrame *frame) {
-    // setVariable(frame, "=", createCFunc(equals, 2));
-    // setVariable(frame, "+", createCFunc(add, 2));
-    // setVariable(frame, "-", createCFunc(subtract, 2));
-    // setVariable(frame, "*", createCFunc(multiply, 2));
-    // setVariable(frame, "/", createCFunc(divide, 2));
-    // setVariable(frame, "==", createCFunc(equals, 2));
+    setVariable(frame, "=", createCFunc(equals, 2));
+    setVariable(frame, "+", createCFunc(add, 2));
+    setVariable(frame, "-", createCFunc(subtract, 2));
+    setVariable(frame, "*", createCFunc(multiply, 2));
+    setVariable(frame, "/", createCFunc(divide, 2));
+    setVariable(frame, "==", createCFunc(equals, 2));
     setVariable(frame, "print", createCFunc(print, 1));
-    // setVariable(frame, "pi", createNumberObject(PI));
+    setVariable(frame, "pi", createNumberObject(PI));
 }
 
 void closeStackFrame(StackFrame *frame) {
@@ -99,7 +99,7 @@ void closeStackFrame(StackFrame *frame) {
     free(frame);
 }
 
-InterpreterError interpret(Expr **exprs, size_t exprsCount) {
+InterpreterError interpret(Object **output, Expr **exprs, size_t exprsCount) {
     InterpreterError maybeErr;
     maybeErr.errorType = INTERPRETER_NONE;
 
@@ -117,6 +117,11 @@ InterpreterError interpret(Expr **exprs, size_t exprsCount) {
             break;
         }
 
+        if (i == exprsCount - 1) {
+            *output = result;
+            break;
+        }
+
         release(result);
     }
 
@@ -128,7 +133,7 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
     Object *result;
 
     Object *identifierObj;
-    Expr *firstExpr = expr->list.exprs[0];
+    Expr *firstExpr;
     switch (expr->type) {
         case LITERAL:
             switch (expr->literal.type) {
@@ -153,6 +158,7 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
             result = identifierObj;
             break;
         case LIST:
+            firstExpr = expr->list.exprs[0];
             if (firstExpr->type != IDENTIFIER) {
                 result = createErrorObject("Expected identifier in list");
                 break;
@@ -184,19 +190,91 @@ Object *equals(StackFrame *frame, Expr **exprs, size_t size) {
 }
 
 Object *add(StackFrame *frame, Expr **exprs, size_t size) {
-    return createNumberObject(0);
+    if (size != 2) {
+        return createErrorObject("wanted 1 param\n"); 
+    }
+
+    Object *n1 = eval(exprs[0], frame);
+    Object *n2 = eval(exprs[1], frame);
+
+    if (n1->objectId != NUMBER_ID || n2->objectId != NUMBER_ID) {
+        return createErrorObject("wanted numbers\n"); 
+    }
+    
+    NumberObject *nOne = n1->value;
+    NumberObject *nTwo = n2->value;
+
+    double result = nOne->num + nTwo->num;
+    release(n1);
+    release(n2);
+
+    return createNumberObject(result);
 }
 
 Object *subtract(StackFrame *frame, Expr **exprs, size_t size) {
-    return createNumberObject(0);
+    if (size != 2) {
+        return createErrorObject("wanted 1 param\n"); 
+    }
+
+    Object *n1 = eval(exprs[0], frame);
+    Object *n2 = eval(exprs[1], frame);
+
+    if (n1->objectId != NUMBER_ID || n2->objectId != NUMBER_ID) {
+        return createErrorObject("wanted numbers\n"); 
+    }
+    
+    NumberObject *nOne = n1->value;
+    NumberObject *nTwo = n2->value;
+
+    double result = nOne->num - nTwo->num;
+    release(n1);
+    release(n2);
+
+    return createNumberObject(result);
 }
 
 Object *divide(StackFrame *frame, Expr **exprs, size_t size) {
-    return createNumberObject(0);
+    if (size != 2) {
+        return createErrorObject("wanted 1 param\n"); 
+    }
+
+    Object *n1 = eval(exprs[0], frame);
+    Object *n2 = eval(exprs[1], frame);
+
+    if (n1->objectId != NUMBER_ID || n2->objectId != NUMBER_ID) {
+        return createErrorObject("wanted numbers\n"); 
+    }
+    
+    NumberObject *nOne = n1->value;
+    NumberObject *nTwo = n2->value;
+
+    double result = nOne->num / nTwo->num;
+    release(n1);
+    release(n2);
+
+    return createNumberObject(result);
 }
 
 Object *multiply(StackFrame *frame, Expr **exprs, size_t size) {
-    return createNumberObject(0);
+    if (size != 2) {
+        return createErrorObject("wanted 1 param\n"); 
+    }
+
+    Object *n1 = eval(exprs[0], frame);
+    Object *n2 = eval(exprs[1], frame);
+
+    if (n1->objectId != NUMBER_ID || n2->objectId != NUMBER_ID) {
+        return createErrorObject("wanted numbers\n"); 
+    }
+    
+    NumberObject *nOne = n1->value;
+    NumberObject *nTwo = n2->value;
+
+    double result = nOne->num * nTwo->num;
+    release(n1);
+    release(n2);
+
+    return createNumberObject(result);
 }
 
 Object *equality(StackFrame *frame, Expr **exprs, size_t size) {
