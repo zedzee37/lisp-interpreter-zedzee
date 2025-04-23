@@ -90,13 +90,13 @@ void run(char *source) {
     Expr **exprs;
     ParserError err = parse(source, &exprCount, &exprs);
 
-    for (int i = 0; i < exprCount; i++) {
-        printExpr(exprs[i]);
-    }
-
     if (err.errorType != PARSER_NONE) {
         reportError(err);
-        return;
+        goto free_exprs;
+    }
+
+    for (int i = 0; i < exprCount; i++) {
+        printExpr(exprs[i]);
     }
 
     // Object *output;
@@ -106,13 +106,18 @@ void run(char *source) {
     // 
     // if (interpreterErr.errorType != INTERPRETER_NONE) {
     //     printf("%s\n", interpreterErr.msg);
+    //     return;
     // }
+    //
+
+free_exprs:
 
     for (int i = 0; i < exprCount; i++) {
         freeExpr(exprs[i]);
     }
 
     free(exprs);
+    return;
 }
 
 void runFile(char *fileName) {

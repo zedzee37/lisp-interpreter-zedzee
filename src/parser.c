@@ -87,14 +87,16 @@ ParserError parseListExpr(Parser *parser, Expr *expr) {
 
     listExpr.exprs = calloc(listExpr.exprsSize, sizeof(Expr *));
 
+    expr->type = LIST;
+
     while (parser->current < parser->sourceLength) {
         consumeWhitespace(parser);
 
-        Expr *expr;
-        ParserError err = parseExpr(parser, &expr);
+        Expr *e;
+        ParserError err = parseExpr(parser, &e);
 
         if (err.errorType != PARSER_NONE) {
-            free(listExpr.exprs);
+            expr->list = listExpr;
             return err;
         }
 
@@ -103,7 +105,7 @@ ParserError parseListExpr(Parser *parser, Expr *expr) {
             listExpr.exprs = realloc(listExpr.exprs, listExpr.exprsSize * sizeof(Expr *));
         }
 
-        listExpr.exprs[listExpr.exprsCount++] = expr;
+        listExpr.exprs[listExpr.exprsCount++] = e;
 
         if (listExpr.exprsCount >= 4) {
             printf("%lu\n", expr->list.exprsCount);
@@ -115,16 +117,23 @@ ParserError parseListExpr(Parser *parser, Expr *expr) {
 
         if (ch == ')') {
             parser->current++;
-            consumeWhitespace(parser);
-            break;
+
+            expr->list = listExpr;
+
+            maybeErr.errorType = PARSER_NONE;
+            return maybeErr;
         }
     }
 
-    expr->list = listExpr;
-    expr->type = LIST;
+    maybeErr.errorType = PARSER_MISSING_CHAR;
+    maybeErr.ch = ')';
+    maybeErr.line = parser->line;
+    maybeErr.where = parser->current;
 
-    maybeErr.errorType = PARSER_NONE;
+    expr->list = listExpr;
+
     return maybeErr;
+
 }
 
 ParserError parseString(Parser *parser, Expr *expr) {
@@ -316,11 +325,11 @@ ParserError parseExpr(Parser *parser, Expr **expr) {
             break;
     }
 
+    *expr = e;
+
     if (maybeErr.errorType != PARSER_NONE) {
         return maybeErr;
     }
-
-    *expr = e;
 
     err.errorType = PARSER_NONE;
     return err;
@@ -355,12 +364,12 @@ ParserError parse(const char *source, size_t *tokensSize, Expr ***resultExprs) {
         Expr *expr;
         ParserError maybeErr = parseExpr(&parser, &expr);
 
-        if (maybeErr.errorType != PARSER_NONE) {
-            return maybeErr;
-        }
-
         if (expr) {
             addExpr(&parser, expr);
+        }
+
+        if (maybeErr.errorType != PARSER_NONE) {
+            return maybeErr;
         }
     }
 
