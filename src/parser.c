@@ -249,7 +249,7 @@ ParserError parseIdentifier(Parser *parser, Expr *expr) {
         parser->current < parser->sourceLength &&
         isRegular(parser->source[parser->current])
     ) {
-        char ch = parser->source[parser->current++];
+        char ch = parser->source[parser->current];
 
         if (charCount >= strSize) {
             strSize *= 2;
@@ -257,6 +257,7 @@ ParserError parseIdentifier(Parser *parser, Expr *expr) {
         }
 
         str[charCount++] = ch;
+        parser->current++;
     }
 
     // Make room for the null terminator.
