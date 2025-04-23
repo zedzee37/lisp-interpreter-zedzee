@@ -90,6 +90,11 @@ void run(char *source) {
     Expr **exprs;
     ParserError err = parse(source, &exprCount, &exprs);
 
+    for (int i = 0; i < exprCount; i++) {
+        printExpr(exprs[i]);
+        freeExpr(exprs[i]);
+    }
+
     if (err.errorType != PARSER_NONE) {
         reportError(err);
         return;

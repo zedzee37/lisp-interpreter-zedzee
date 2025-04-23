@@ -191,6 +191,7 @@ Object *equals(StackFrame *frame, Expr **exprs, size_t size) {
 
 Object *add(StackFrame *frame, Expr **exprs, size_t size) {
     if (size != 2) {
+        printf("%lu\n", size);
         return createErrorObject("wanted 1 param\n"); 
     }
 
