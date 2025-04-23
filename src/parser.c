@@ -102,7 +102,12 @@ ParserError parseListExpr(Parser *parser, Expr *expr) {
             listExpr.exprsSize += 2;
             listExpr.exprs = realloc(listExpr.exprs, listExpr.exprsSize * sizeof(Expr *));
         }
+
         listExpr.exprs[listExpr.exprsCount++] = expr;
+
+        if (listExpr.exprsCount >= 4) {
+            printf("%lu\n", expr->list.exprsCount);
+        }
 
         consumeWhitespace(parser);
 
@@ -184,7 +189,7 @@ ParserError parseNumber(Parser *parser, Expr *expr) {
     while (
         parser->current < parser->sourceLength
     ) {
-        char ch = parser->source[parser->current++];
+        char ch = parser->source[parser->current];
 
         if (!isdigit(ch)) {
             if (ch == '.') {
@@ -202,6 +207,8 @@ ParserError parseNumber(Parser *parser, Expr *expr) {
                 break;
             }
         }
+
+        parser->current++;
 
         if (digitCount >= strSize) {
             strSize *= 2;

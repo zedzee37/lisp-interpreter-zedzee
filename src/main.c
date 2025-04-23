@@ -92,7 +92,6 @@ void run(char *source) {
 
     for (int i = 0; i < exprCount; i++) {
         printExpr(exprs[i]);
-        freeExpr(exprs[i]);
     }
 
     if (err.errorType != PARSER_NONE) {
@@ -100,14 +99,14 @@ void run(char *source) {
         return;
     }
 
-    Object *output;
-    InterpreterError interpreterErr = interpret(&output, exprs, exprCount);
-    printObj(output);
-    release(output);
-    
-    if (interpreterErr.errorType != INTERPRETER_NONE) {
-        printf("%s\n", interpreterErr.msg);
-    }
+    // Object *output;
+    // InterpreterError interpreterErr = interpret(&output, exprs, exprCount);
+    // printObj(output);
+    // release(output);
+    // 
+    // if (interpreterErr.errorType != INTERPRETER_NONE) {
+    //     printf("%s\n", interpreterErr.msg);
+    // }
 
     for (int i = 0; i < exprCount; i++) {
         freeExpr(exprs[i]);
