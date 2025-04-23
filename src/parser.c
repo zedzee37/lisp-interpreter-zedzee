@@ -369,6 +369,8 @@ ParserError parse(const char *source, size_t *tokensSize, Expr ***resultExprs) {
         }
 
         if (maybeErr.errorType != PARSER_NONE) {
+            *resultExprs = parser.exprs;
+            *tokensSize = parser.exprsCount;
             return maybeErr;
         }
     }
