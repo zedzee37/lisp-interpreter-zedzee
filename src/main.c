@@ -1,5 +1,4 @@
 #include "expr.h"
-#include "interpreter.h"
 #include "object.h"
 #include "parser.h"
 #include <stddef.h>
@@ -71,7 +70,7 @@ char *readFile(char *fileName) {
     return fileContents;
 }
 
-void reportError(ParserError err) {
+void reportParserError(ParserError err) {
     switch (err.errorType) {
         case PARSER_UNEXPECTED_CHAR:
             printf("Unexpected character at %lu:%lu, found %c.\n", err.line, err.where, err.ch);
@@ -91,7 +90,7 @@ void run(char *source) {
     ParserError err = parse(source, &exprCount, &exprs);
 
     if (err.errorType != PARSER_NONE) {
-        reportError(err);
+        reportParserError(err);
         goto free_exprs;
     }
 
