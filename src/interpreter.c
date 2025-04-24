@@ -129,6 +129,20 @@ InterpreterError interpret(Object **output, Expr **exprs, size_t exprsCount) {
     return maybeErr;
 }
 
+Object *findVariable (StackFrame *frame, const char *key) {
+    Object *result = hashTableGet(frame->table, key);
+    
+    if (!result) {
+        if (!frame->prevFrame) {
+            return NULL;
+        }
+
+        return findVariable(frame->prevFrame, key);
+    }
+
+    return result;
+}
+
 Object *eval(Expr *expr, StackFrame *stackFrame) {
     Object *result;
 
@@ -148,7 +162,8 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
             }
             break;
         case IDENTIFIER:
-            identifierObj = hashTableGet(stackFrame->table, expr->identifier.name);
+            // identifierObj = hashTableGet(stackFrame->table, expr->identifier.name);
+            identifierObj = findVariable(stackFrame, expr->identifier.name);
 
             if (!identifierObj) {
                 result = createErrorObject("Did not expect identifier.");

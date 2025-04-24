@@ -1,4 +1,5 @@
 #include "expr.h"
+#include "interpreter.h"
 #include "object.h"
 #include "parser.h"
 #include <stddef.h>
@@ -98,16 +99,16 @@ void run(char *source) {
         printExpr(exprs[i]);
     }
 
-    // Object *output;
-    // InterpreterError interpreterErr = interpret(&output, exprs, exprCount);
-    // printObj(output);
+    Object *output;
+    InterpreterError interpreterErr = interpret(&output, exprs, exprCount);
+    printObj(output);
     // release(output);
-    // 
-    // if (interpreterErr.errorType != INTERPRETER_NONE) {
-    //     printf("%s\n", interpreterErr.msg);
-    //     return;
-    // }
-    //
+
+    if (interpreterErr.errorType != INTERPRETER_NONE) {
+        printf("%s\n", interpreterErr.msg);
+        return;
+    }
+
 
 free_exprs:
 
