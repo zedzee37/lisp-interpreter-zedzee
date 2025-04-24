@@ -95,9 +95,9 @@ void run(char *source) {
         goto free_exprs;
     }
 
-    for (int i = 0; i < exprCount; i++) {
-        printExpr(exprs[i]);
-    }
+    // for (int i = 0; i < exprCount; i++) {
+    //     printExpr(exprs[i]);
+    // }
 
     Object *output;
     InterpreterError interpreterErr = interpret(&output, exprs, exprCount);
