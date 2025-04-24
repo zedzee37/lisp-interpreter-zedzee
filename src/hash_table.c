@@ -40,6 +40,7 @@ bool hashTableSet(HashTable *table, const char *key, void *value) {
     bool wasNull = entry->str == NULL;
     entry->value = value;
     entry->str = key;
+    table->count++;
     return wasNull;
 }
 
@@ -50,6 +51,7 @@ void hashTableDelete(HashTable *table, const char *key) {
     Entry *entry = findEntry(table->entries, table->size, key);
     entry->str = NULL;
     entry->value = NULL;
+    table->count--;
 }
 
 void hashTableGrow(HashTable *table) {
