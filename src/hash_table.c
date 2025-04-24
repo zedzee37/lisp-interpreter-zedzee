@@ -32,13 +32,15 @@ void *hashTableGet(const HashTable *table, const char *key) {
     return entry->value;
 }
 
-void hashTableSet(HashTable *table, const char *key, void *value) {
+bool hashTableSet(HashTable *table, const char *key, void *value) {
     if (hashTableLoad(table) >= MAX_HASH_TABLE_LOAD) {
         hashTableGrow(table);
     }
     Entry *entry = findEntry(table->entries, table->size, key);
+    bool wasNull = entry->str == NULL;
     entry->value = value;
     entry->str = key;
+    return wasNull;
 }
 
 void hashTableDelete(HashTable *table, const char *key) {
@@ -73,9 +75,14 @@ void hashTableGrow(HashTable *table) {
 
 Entry *findEntry(const Entry *entries, size_t size, const char *key) {
     uint32_t idx = hashString(key, strlen(key)) % size;
+    uint32_t startIdx = idx;
 
     while (entries[idx].str != NULL && strcmp(entries[idx].str, key) != 0) {
         idx = (idx + 1) % size; 
+
+        if (idx == startIdx) {
+            return NULL;
+        }
     }
 
     return &entries[idx];

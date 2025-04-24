@@ -1,5 +1,16 @@
 #include <object.h>
 #include <stdlib.h>
+
+void reference(Object *obj) {
+    obj->refCount++;
+}
+
+void dereference(Object *obj) {
+    obj->refCount--;
+    if (obj->refCount <= 0) {
+        release(obj);
+    }
+}
  
 void release(Object *obj) {
     switch (obj->objectType) {

@@ -19,6 +19,8 @@ typedef struct {
     void *value;
 } Object;
 
+void reference(Object *obj);
+void dereference(Object *obj);
 void release(Object *obj);
 
 typedef struct {
@@ -56,5 +58,6 @@ Object *multiply(StackFrame *frame, Expr **exprs, size_t size);
 Object *equality(StackFrame *frame, Expr **exprs, size_t size);
 Object *print(StackFrame *frame, Expr **exprs, size_t size);
 Object *toStr(StackFrame *frame, Expr **exprs, size_t size);
+Object *set(StackFrame *frame, Expr **exprs, size_t size);
 
 #define PI 3.14159

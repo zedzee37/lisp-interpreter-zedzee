@@ -15,8 +15,9 @@ StackFrame *initStackFrame() {
 }
 
 void setVariable(StackFrame *frame, char *key, Object *object) {
-    object->refCount++;
-    hashTableSet(frame->table, key, object);
+    if (hashTableSet(frame->table, key, object)) {
+        object->refCount++;
+    }
 }
 
 Object *createCFunc(CFunc func, size_t argCount) {
@@ -192,6 +193,10 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
             if (firstObj->objectType == CFUNCTION_ID) {
                 CFunctionObject *cFuncObject = firstObj->value;
                 result = cFuncObject->fn(newFrame, expr->list.exprs + 1, expr->list.exprsCount - 1);
+            } else if (firstObj->objectType == FUNCTION_ID) {
+                 
+            } else {
+                result = createErrorObject("Expected function\n");  
             }
 
             closeStackFrame(newFrame);
@@ -202,6 +207,21 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
 }
 
 Object *equals(StackFrame *frame, Expr **exprs, size_t size) {
+    if (!frame->prevFrame) {
+        return createErrorObject("Need prev stack frame\n");
+    } else if (size != 2) {
+        return createErrorObject("need 2 args\n");
+    }
+
+    Expr *identifierExpr = exprs[0];
+    Object *value = eval(exprs[1], frame);
+
+    if (identifierExpr->type != IDENTIFIER) {
+        return createErrorObject("expected identifier\n");
+    }
+    
+    setVariable(frame->prevFrame, identifierExpr->identifier.name, value);
+
     return createNumberObject(0);
 }
 
@@ -212,7 +232,9 @@ Object *add(StackFrame *frame, Expr **exprs, size_t size) {
     }
 
     Object *n1 = eval(exprs[0], frame);
+    reference(n1);
     Object *n2 = eval(exprs[1], frame);
+    reference(n2);
 
     if (n1->objectType != NUMBER_ID || n2->objectType != NUMBER_ID) {
         return createErrorObject("wanted numbers\n"); 
@@ -222,8 +244,8 @@ Object *add(StackFrame *frame, Expr **exprs, size_t size) {
     NumberObject *nTwo = n2->value;
 
     double result = nOne->num + nTwo->num;
-    release(n1);
-    release(n2);
+    dereference(n1);
+    dereference(n2);
 
     return createNumberObject(result);
 }
@@ -234,7 +256,9 @@ Object *subtract(StackFrame *frame, Expr **exprs, size_t size) {
     }
 
     Object *n1 = eval(exprs[0], frame);
+    reference(n1);
     Object *n2 = eval(exprs[1], frame);
+    reference(n2);
 
     if (n1->objectType != NUMBER_ID || n2->objectType != NUMBER_ID) {
         return createErrorObject("wanted numbers\n"); 
@@ -244,8 +268,8 @@ Object *subtract(StackFrame *frame, Expr **exprs, size_t size) {
     NumberObject *nTwo = n2->value;
 
     double result = nOne->num - nTwo->num;
-    release(n1);
-    release(n2);
+    dereference(n1);
+    dereference(n2);
 
     return createNumberObject(result);
 }
@@ -256,7 +280,9 @@ Object *divide(StackFrame *frame, Expr **exprs, size_t size) {
     }
 
     Object *n1 = eval(exprs[0], frame);
+    reference(n1);
     Object *n2 = eval(exprs[1], frame);
+    reference(n2);
 
     if (n1->objectType != NUMBER_ID || n2->objectType != NUMBER_ID) {
         return createErrorObject("wanted numbers\n"); 
@@ -266,8 +292,8 @@ Object *divide(StackFrame *frame, Expr **exprs, size_t size) {
     NumberObject *nTwo = n2->value;
 
     double result = nOne->num / nTwo->num;
-    release(n1);
-    release(n2);
+    dereference(n1);
+    dereference(n2);
 
     return createNumberObject(result);
 }
@@ -278,7 +304,9 @@ Object *multiply(StackFrame *frame, Expr **exprs, size_t size) {
     }
 
     Object *n1 = eval(exprs[0], frame);
+    reference(n1);
     Object *n2 = eval(exprs[1], frame);
+    reference(n2);
 
     if (n1->objectType != NUMBER_ID || n2->objectType != NUMBER_ID) {
         return createErrorObject("wanted numbers\n"); 
@@ -288,8 +316,8 @@ Object *multiply(StackFrame *frame, Expr **exprs, size_t size) {
     NumberObject *nTwo = n2->value;
 
     double result = nOne->num * nTwo->num;
-    release(n1);
-    release(n2);
+    dereference(n1);
+    dereference(n2);
 
     return createNumberObject(result);
 }
