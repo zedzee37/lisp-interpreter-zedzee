@@ -2,12 +2,12 @@
 #include <stdlib.h>
  
 void release(Object *obj) {
-    switch (obj->objectId) {
+    switch (obj->objectType) {
         case STRING_ID:
-            free(((StringObject *)obj)->str);
+            free(((StringObject *)obj->value)->str);
             break;
         case FUNCTION_ID:
-            free(((FunctionObject *)obj)->exprs);
+            free(((FunctionObject *)obj->value)->exprs);
             break;
     }
     free(obj->value);

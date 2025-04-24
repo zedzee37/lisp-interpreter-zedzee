@@ -8,7 +8,7 @@
 #include <stdbool.h>
 
 void printObj(Object *obj) {
-    switch (obj->objectId) {
+    switch (obj->objectType) {
         case NUMBER_ID:
             printf("%f\n", ((NumberObject *)obj->value)->num);
             break;

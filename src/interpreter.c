@@ -25,7 +25,7 @@ Object *createCFunc(CFunc func, size_t argCount) {
     cFuncObject->fn = func;
 
     Object *obj = malloc(sizeof(Object));
-    obj->objectId = CFUNCTION_ID;
+    obj->objectType = CFUNCTION_ID;
     obj->value = cFuncObject;
     obj->refCount = 0;
     return obj;
@@ -36,7 +36,7 @@ Object *createNumberObject(double number) {
     numberObject->num = number;
 
     Object *obj = malloc(sizeof(Object));
-    obj->objectId = NUMBER_ID;
+    obj->objectType = NUMBER_ID;
     obj->value = numberObject;
     obj->refCount = 0;
     return obj;
@@ -52,7 +52,7 @@ Object *createStringObject(char *str) {
     stringObject->len = strLen;
 
     Object *obj = malloc(sizeof(Object));
-    obj->objectId = STRING_ID;
+    obj->objectType = STRING_ID;
     obj->value = stringObject;
     obj->refCount = 0;
     return obj;
@@ -63,7 +63,7 @@ Object *createErrorObject(const char *msg) {
     errObject->msg = msg;
 
     Object *obj = malloc(sizeof(Object));
-    obj->objectId = ERROR_ID;
+    obj->objectType = ERROR_ID;
     obj->value = errObject;
     obj->refCount = 0;
     return obj;
@@ -78,6 +78,7 @@ void setGlobalFrame(StackFrame *frame) {
     setVariable(frame, "==", createCFunc(equals, 2));
     setVariable(frame, "print", createCFunc(print, 1));
     setVariable(frame, "pi", createNumberObject(PI));
+    setVariable(frame, "str", createCFunc(toStr, 1));
 }
 
 void closeStackFrame(StackFrame *frame) {
@@ -111,7 +112,7 @@ InterpreterError interpret(Object **output, Expr **exprs, size_t exprsCount) {
 
         Object *result = eval(expr, globalFrame);
 
-        if (result->objectId == ERROR_ID) {
+        if (result->objectType == ERROR_ID) {
             maybeErr.errorType = INTERPRETER_ERR; // Tmp
             maybeErr.msg = ((ErrorObject *)result->value)->msg;
             break;
@@ -180,7 +181,7 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
             }
 
             Object *firstObj = eval(firstExpr, stackFrame);
-            if (firstObj->objectId != FUNCTION_ID && firstObj->objectId != CFUNCTION_ID) {
+            if (firstObj->objectType != FUNCTION_ID && firstObj->objectType != CFUNCTION_ID) {
                 result = createErrorObject("Expected function in list");
                 break;
             }
@@ -188,7 +189,7 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
             StackFrame *newFrame = initStackFrame();
             newFrame->prevFrame = stackFrame;
 
-            if (firstObj->objectId == CFUNCTION_ID) {
+            if (firstObj->objectType == CFUNCTION_ID) {
                 CFunctionObject *cFuncObject = firstObj->value;
                 result = cFuncObject->fn(newFrame, expr->list.exprs + 1, expr->list.exprsCount - 1);
             }
@@ -213,7 +214,7 @@ Object *add(StackFrame *frame, Expr **exprs, size_t size) {
     Object *n1 = eval(exprs[0], frame);
     Object *n2 = eval(exprs[1], frame);
 
-    if (n1->objectId != NUMBER_ID || n2->objectId != NUMBER_ID) {
+    if (n1->objectType != NUMBER_ID || n2->objectType != NUMBER_ID) {
         return createErrorObject("wanted numbers\n"); 
     }
     
@@ -235,7 +236,7 @@ Object *subtract(StackFrame *frame, Expr **exprs, size_t size) {
     Object *n1 = eval(exprs[0], frame);
     Object *n2 = eval(exprs[1], frame);
 
-    if (n1->objectId != NUMBER_ID || n2->objectId != NUMBER_ID) {
+    if (n1->objectType != NUMBER_ID || n2->objectType != NUMBER_ID) {
         return createErrorObject("wanted numbers\n"); 
     }
     
@@ -257,7 +258,7 @@ Object *divide(StackFrame *frame, Expr **exprs, size_t size) {
     Object *n1 = eval(exprs[0], frame);
     Object *n2 = eval(exprs[1], frame);
 
-    if (n1->objectId != NUMBER_ID || n2->objectId != NUMBER_ID) {
+    if (n1->objectType != NUMBER_ID || n2->objectType != NUMBER_ID) {
         return createErrorObject("wanted numbers\n"); 
     }
     
@@ -279,7 +280,7 @@ Object *multiply(StackFrame *frame, Expr **exprs, size_t size) {
     Object *n1 = eval(exprs[0], frame);
     Object *n2 = eval(exprs[1], frame);
 
-    if (n1->objectId != NUMBER_ID || n2->objectId != NUMBER_ID) {
+    if (n1->objectType != NUMBER_ID || n2->objectType != NUMBER_ID) {
         return createErrorObject("wanted numbers\n"); 
     }
     
@@ -303,12 +304,36 @@ Object *print(StackFrame *frame, Expr **exprs, size_t size) {
     }
     Object *toPrint = eval(exprs[0], frame);
 
-    if (toPrint->objectId != STRING_ID) {
+    if (toPrint->objectType != STRING_ID) {
         return createErrorObject("expected string\n"); 
     }
 
     StringObject *strObj = (StringObject *)toPrint->value;
     printf("%s\n", strObj->str);
 
+    release(toPrint);
     return createNumberObject(0);
+}
+
+Object *toStr(StackFrame *frame, Expr **exprs, size_t size) {
+    if (size != 1) {
+        return createErrorObject("wanted 1 param\n"); 
+    }
+
+    Object *toConv = eval(exprs[0], frame);
+    Object *result;
+    char buffer[100];
+
+    switch (toConv->objectType) {
+        case NUMBER_ID:
+            snprintf(buffer, 100, "%f", ((NumberObject *)toConv->value)->num);
+            result = createStringObject(buffer);
+            break;
+        default:
+            result = createStringObject("obj\n");
+            break;
+    }
+    
+    release(toConv);
+    return result;
 }

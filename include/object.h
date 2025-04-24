@@ -14,7 +14,7 @@ enum {
 };
 
 typedef struct {
-    uint32_t objectId;
+    uint32_t objectType;
     uint32_t refCount;
     void *value;
 } Object;
@@ -55,5 +55,6 @@ Object *divide(StackFrame *frame, Expr **exprs, size_t size);
 Object *multiply(StackFrame *frame, Expr **exprs, size_t size);
 Object *equality(StackFrame *frame, Expr **exprs, size_t size);
 Object *print(StackFrame *frame, Expr **exprs, size_t size);
+Object *toStr(StackFrame *frame, Expr **exprs, size_t size);
 
 #define PI 3.14159
