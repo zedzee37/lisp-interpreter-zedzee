@@ -102,7 +102,7 @@ void run(char *source) {
     Object *output;
     InterpreterError interpreterErr = interpret(&output, exprs, exprCount);
     printObj(output);
-    // release(output);
+    release(output);
 
     if (interpreterErr.errorType != INTERPRETER_NONE) {
         printf("%s\n", interpreterErr.msg);
