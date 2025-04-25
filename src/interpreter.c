@@ -77,6 +77,19 @@ Object *createStringObject(char *str) {
     return obj;
 }
 
+Object *createArrayObject(Object **elements, size_t size, size_t count) {
+    ArrayObject *arrayObject = malloc(sizeof(ArrayObject));
+    arrayObject->elements = elements;
+    arrayObject->size = size;
+    arrayObject->count = count;
+    
+    Object *obj = malloc(sizeof(Object));
+    obj->objectType = ARRAY_ID;
+    obj->value = arrayObject;
+    obj->refCount = 0;
+    return obj;
+}
+
 Object *createErrorObject(const char *msg) {
     ErrorObject *errObject = malloc(sizeof(ErrorObject));
     errObject->msg = msg;
@@ -162,6 +175,8 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
 
     Object *identifierObj;
     Expr *firstExpr;
+
+    Object **arrElements;
     switch (expr->type) {
         case LITERAL:
             switch (expr->literal.type) {
@@ -172,6 +187,13 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
                     result = createNumberObject(expr->literal.number);
                     break;
                 case ARRAY:
+                    arrElements = calloc(expr->literal.array.size, sizeof(Object *));
+                    for (int i = 0; i < expr->literal.array.count; i++) {
+                        Object *element = eval(expr->literal.array.elements[i], stackFrame);
+                        reference(element);
+                        arrElements[i] = element;
+                    }
+                    result = createArrayObject(arrElements, expr->literal.array.size, expr->literal.array.count);
                     break;
             }
             break;

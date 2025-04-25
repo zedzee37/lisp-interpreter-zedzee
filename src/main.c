@@ -8,6 +8,7 @@
 #include <stdbool.h>
 
 void printObj(Object *obj) {
+    ArrayObject *arrayObject = obj->value;
     switch (obj->objectType) {
         case NUMBER_ID:
             printf("%f\n", ((NumberObject *)obj->value)->num);
@@ -15,6 +16,13 @@ void printObj(Object *obj) {
         case STRING_ID:
             printf("%s\n", ((StringObject *)obj->value)->str);
             break;
+        case ARRAY_ID:
+            printf("Array:\n");
+
+            for (int i = 0; i < arrayObject->count; i++) {
+                printf("* ");
+                printObj(arrayObject->elements[i]);
+            }
         default:
             break;
     }
@@ -100,19 +108,19 @@ void run(Interpreter *interpreter, char *source) {
         goto free_exprs;
     }
 
-    for (int i = 0; i < exprCount; i++) {
-        printExpr(exprs[i]);
-    }
-
-    // Object *output;
-    // InterpreterError interpreterErr = interpret(interpreter, &output, exprs, exprCount);
-    // printObj(output);
-    // release(output);
-
-    // if (interpreterErr.errorType != INTERPRETER_NONE) {
-    //     printf("%s\n", interpreterErr.msg);
-    //     return;
+    // for (int i = 0; i < exprCount; i++) {
+    //     printExpr(exprs[i]);
     // }
+
+    Object *output;
+    InterpreterError interpreterErr = interpret(interpreter, &output, exprs, exprCount);
+    printObj(output);
+    release(output);
+
+    if (interpreterErr.errorType != INTERPRETER_NONE) {
+        printf("%s\n", interpreterErr.msg);
+        return;
+    }
 
 free_exprs:
 
