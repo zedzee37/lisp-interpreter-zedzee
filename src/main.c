@@ -30,7 +30,12 @@ void printExpr(Expr *expr) {
                 case NUMBER:
                     printf("Literal %f\n", expr->literal.number);
                     break;
-                case BOOLEAN:
+                case ARRAY:
+                    printf("Literal Array: \n");
+                    for (int i = 0; i < expr->literal.array.count; i++) {
+                        printf("* "); 
+                        printExpr(expr->literal.array.elements[i]);
+                    }
                     break;
             }
             break;
@@ -95,19 +100,19 @@ void run(Interpreter *interpreter, char *source) {
         goto free_exprs;
     }
 
-    // for (int i = 0; i < exprCount; i++) {
-    //     printExpr(exprs[i]);
-    // }
-
-    Object *output;
-    InterpreterError interpreterErr = interpret(interpreter, &output, exprs, exprCount);
-    printObj(output);
-    release(output);
-
-    if (interpreterErr.errorType != INTERPRETER_NONE) {
-        printf("%s\n", interpreterErr.msg);
-        return;
+    for (int i = 0; i < exprCount; i++) {
+        printExpr(exprs[i]);
     }
+
+    // Object *output;
+    // InterpreterError interpreterErr = interpret(interpreter, &output, exprs, exprCount);
+    // printObj(output);
+    // release(output);
+
+    // if (interpreterErr.errorType != INTERPRETER_NONE) {
+    //     printf("%s\n", interpreterErr.msg);
+    //     return;
+    // }
 
 free_exprs:
 

@@ -25,6 +25,12 @@ void freeExpr(Expr *expr) {
                 case STRING:
                     free(expr->literal.string);
                     break;
+                case ARRAY:
+                    for (int i = 0; i < expr->literal.array.count; i++) {
+                        freeExpr(expr->literal.array.elements[i]);
+                    }
+                    free(expr->literal.array.elements);
+                    break;
                 default:
                     break;
             }
@@ -133,7 +139,6 @@ ParserError parseListExpr(Parser *parser, Expr *expr) {
     expr->list = listExpr;
 
     return maybeErr;
-
 }
 
 ParserError parseString(Parser *parser, Expr *expr) {
@@ -287,6 +292,56 @@ ParserError parseIdentifier(Parser *parser, Expr *expr) {
     return maybeError;
 }
 
+ParserError parseArray(Parser *parser, Expr *expr) {
+    ParserError maybeError;
+    maybeError.errorType = PARSER_NONE;
+
+    parser->current++; // consume the [
+    
+    LiteralExpr literal;
+    literal.type = ARRAY;
+    literal.array.size = ARRAY_DEFAULT_SIZE;
+    literal.array.count = 0;
+    literal.array.elements = calloc(literal.array.size, sizeof(Expr *)); 
+
+    while (parser->current < parser->sourceLength) {
+        consumeWhitespace(parser);
+
+        Expr *e;
+        ParserError err = parseExpr(parser, &e);
+        
+        if (err.errorType != PARSER_NONE) {
+            maybeError = err;
+            goto exit;
+        }
+
+        if (literal.array.count >= literal.array.size) {
+            literal.array.size *= 2;
+            literal.array.elements = realloc(literal.array.elements, literal.array.size * sizeof(Expr *));
+        }
+
+        literal.array.elements[literal.array.count++] = e;
+        
+        consumeWhitespace(parser);
+
+        if (parser->source[parser->current] == ']') {
+            parser->current++;
+            goto exit;
+        }
+    }
+
+    maybeError.errorType = PARSER_MISSING_CHAR;
+    maybeError.ch = ']';
+    maybeError.line = parser->line;
+    maybeError.where = parser->current;
+
+exit:
+    expr->type = LITERAL;
+    expr->literal = literal;
+
+    return maybeError;
+}
+
 ParserError parseExpr(Parser *parser, Expr **expr) {
     consumeWhitespace(parser);
 
@@ -309,6 +364,9 @@ ParserError parseExpr(Parser *parser, Expr **expr) {
             break;
         case '"':
             maybeErr = parseString(parser, e);
+            break;
+        case '[':
+            maybeErr = parseArray(parser, e);
             break;
         default:
             if (isdigit(ch)) {

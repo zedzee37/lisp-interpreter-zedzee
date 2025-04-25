@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#define ARRAY_DEFAULT_SIZE 10
+
 typedef enum {
 	LITERAL,
 	LIST,
@@ -11,8 +13,8 @@ typedef enum {
 
 typedef enum {
 	STRING,
-	BOOLEAN,
 	NUMBER,
+    ARRAY,
 } LiteralType;
 
 typedef struct Expr Expr;
@@ -20,8 +22,12 @@ typedef struct Expr Expr;
 typedef struct {
 	union {
 		char *string;
-		bool boolean;
 		double number;
+        struct {
+            size_t size;
+            size_t count;
+            Expr **elements;
+        } array;
 	};
 	LiteralType type;
 } LiteralExpr;

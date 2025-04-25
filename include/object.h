@@ -8,6 +8,7 @@
 enum {
     NUMBER_ID,
     STRING_ID,
+    ARRAY_ID,
     FUNCTION_ID,
     CFUNCTION_ID,
     ERROR_ID,
@@ -31,6 +32,12 @@ typedef struct {
     char *str;
     size_t len;
 } StringObject;
+
+typedef struct {
+    Object **elements;
+    size_t size;
+    size_t count;
+} ArrayObject;
 
 typedef struct {
     Expr **exprs;

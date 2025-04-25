@@ -171,7 +171,7 @@ Object *eval(Expr *expr, StackFrame *stackFrame) {
                 case NUMBER:
                     result = createNumberObject(expr->literal.number);
                     break;
-                case BOOLEAN:
+                case ARRAY:
                     break;
             }
             break;
