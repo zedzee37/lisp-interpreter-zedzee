@@ -85,7 +85,7 @@ void reportParserError(ParserError err) {
     return;
 }
 
-void run(char *source) {
+void run(Interpreter *interpreter, char *source) {
     size_t exprCount;
     Expr **exprs;
     ParserError err = parse(source, &exprCount, &exprs);
@@ -100,7 +100,7 @@ void run(char *source) {
     // }
 
     Object *output;
-    InterpreterError interpreterErr = interpret(&output, exprs, exprCount);
+    InterpreterError interpreterErr = interpret(interpreter, &output, exprs, exprCount);
     printObj(output);
     release(output);
 
@@ -108,7 +108,6 @@ void run(char *source) {
         printf("%s\n", interpreterErr.msg);
         return;
     }
-
 
 free_exprs:
 
@@ -126,13 +125,18 @@ void runFile(char *fileName) {
         return;
     }
 
-    run(fileContents);
+    Interpreter *interpreter = initInterpreter();
+
+    run(interpreter, fileContents);
+
+    freeInterpreter(interpreter);
     free(fileContents);
 }
 
 void runPrompt() {
     char *input = NULL;
     size_t size = 0;
+    Interpreter *interpreter = initInterpreter(); // to make the interpreter instance persistent
 
     while (true) {
         printf(" > ");
@@ -140,9 +144,10 @@ void runPrompt() {
         if (len <= 1) {
             break;
         }
-        run(input);
+        run(interpreter, input);
     }
 
+    freeInterpreter(interpreter);
     free(input);
 }
 

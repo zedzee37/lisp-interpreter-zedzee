@@ -101,17 +101,23 @@ void closeStackFrame(StackFrame *frame) {
     free(frame);
 }
 
-InterpreterError interpret(Object **output, Expr **exprs, size_t exprsCount) {
+Interpreter *initInterpreter() {
+    Interpreter *interpreter = malloc(sizeof(Interpreter));
+    
+    interpreter->globalFrame = initStackFrame();
+    setGlobalFrame(interpreter->globalFrame);
+
+    return interpreter;
+}
+
+InterpreterError interpret(Interpreter *interpreter, Object **output, Expr **exprs, size_t exprsCount) {
     InterpreterError maybeErr;
     maybeErr.errorType = INTERPRETER_NONE;
-
-    StackFrame *globalFrame = initStackFrame();
-    setGlobalFrame(globalFrame);
 
     for (int i = 0; i < exprsCount; i++) {
         Expr *expr = exprs[i];
 
-        Object *result = eval(expr, globalFrame);
+        Object *result = eval(expr, interpreter->globalFrame);
 
         if (result->objectType == ERROR_ID) {
             maybeErr.errorType = INTERPRETER_ERR; // Tmp
@@ -127,8 +133,12 @@ InterpreterError interpret(Object **output, Expr **exprs, size_t exprsCount) {
         release(result);
     }
 
-    closeStackFrame(globalFrame);
     return maybeErr;
+}
+
+void freeInterpreter(Interpreter *interpreter) {
+    closeStackFrame(interpreter->globalFrame);
+    free(interpreter);
 }
 
 Object *findVariable (StackFrame *frame, const char *key) {
