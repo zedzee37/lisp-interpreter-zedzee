@@ -1,5 +1,4 @@
 #include <object.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 void reference(Object *obj) {
@@ -7,7 +6,7 @@ void reference(Object *obj) {
 }
 
 void dereference(Object *obj) {
-    printf("dereferencign object %p\n", obj);
+    // printf("dereferencign object %p\n", obj);
     obj->refCount--;
     if (obj->refCount <= 0) {
         release(obj);
@@ -15,7 +14,7 @@ void dereference(Object *obj) {
 }
  
 void release(Object *obj) {
-    printf("Releasing object %p\n", obj);
+    // printf("Releasing object %p\n", obj);
     switch (obj->objectType) {
         case STRING_ID:
             free(((StringObject *)obj->value)->str);

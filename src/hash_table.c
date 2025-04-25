@@ -39,7 +39,7 @@ bool hashTableSet(HashTable *table, const char *key, void *value) {
     Entry *entry = findEntry(table->entries, table->size, key);
     bool wasNull = entry->str == NULL;
     entry->value = value;
-    entry->str = key;
+    entry->str = strdup(key);
     table->count++;
     return wasNull;
 }
@@ -75,7 +75,7 @@ void hashTableGrow(HashTable *table) {
     table->entries = entries;
 }
 
-Entry *findEntry(const Entry *entries, size_t size, const char *key) {
+Entry *findEntry(Entry *entries, size_t size, const char *key) {
     uint32_t idx = hashString(key, strlen(key)) % size;
     uint32_t startIdx = idx;
 
@@ -91,6 +91,9 @@ Entry *findEntry(const Entry *entries, size_t size, const char *key) {
 }
 
 void freeHashTable(HashTable *table) {
+    for (int i = 0; i < table->size; i++) {
+        free(table->entries[i].str);
+    }
     free(table->entries);
     free(table); 
 }

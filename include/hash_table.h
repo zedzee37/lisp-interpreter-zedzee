@@ -26,5 +26,5 @@ void *hashTableGet(const HashTable *table, const char *key);
 void hashTableDelete(HashTable *table, const char *key);
 void hashTableGrow(HashTable *table);
 float hashTableLoad(const HashTable *table);
-Entry *findEntry(const Entry *entries, size_t size, const char *key);
+Entry *findEntry(Entry *entries, size_t size, const char *key);
 

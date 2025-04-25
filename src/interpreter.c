@@ -15,7 +15,6 @@ StackFrame *initStackFrame() {
 }
 
 void setVariable(StackFrame *frame, char *key, Object *object) {
-    printf("Setting variable '%s', of value %p in frame %p (prev: %p)\n", key, object, (void*)frame, (void*)frame->prevFrame);
     Object *old = hashTableGet(frame->table, key);
     
     if (old) {
@@ -25,6 +24,21 @@ void setVariable(StackFrame *frame, char *key, Object *object) {
     hashTableSet(frame->table, key, object);
     reference(object);
 }
+
+Object *findVariable(StackFrame *frame, const char *key) {
+    Object *result = hashTableGet(frame->table, key);
+    
+    if (!result) {
+        if (!frame->prevFrame) {
+            return NULL;
+        }
+
+        return findVariable(frame->prevFrame, key);
+    }
+
+    return result;
+}
+
 
 Object *createCFunc(CFunc func, size_t argCount) {
     CFunctionObject *cFuncObject = malloc(sizeof(CFunctionObject));
@@ -94,8 +108,6 @@ void closeStackFrame(StackFrame *frame) {
             continue;
         }
 
-        printf("im dereferencign stuff\n");
-
         Object *obj = (Object *)entry.value; 
         dereference(obj);
     }
@@ -144,20 +156,6 @@ void freeInterpreter(Interpreter *interpreter) {
     free(interpreter);
 }
 
-Object *findVariable(StackFrame *frame, const char *key) {
-    printf("Attempting to find '%s' in stack frame %p\n", key, frame);
-    Object *result = hashTableGet(frame->table, key);
-    
-    if (!result) {
-        if (!frame->prevFrame) {
-            return NULL;
-        }
-
-        return findVariable(frame->prevFrame, key);
-    }
-
-    return result;
-}
 
 Object *eval(Expr *expr, StackFrame *stackFrame) {
     Object *result;
