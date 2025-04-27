@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <stack_frame.h>
 
+#define PI 3.14159
+
 enum {
     NUMBER_ID,
     STRING_ID,
@@ -12,6 +14,7 @@ enum {
     FUNCTION_ID,
     CFUNCTION_ID,
     ERROR_ID,
+    COMPOSITE_ID,
 };
 
 typedef struct {
@@ -57,6 +60,11 @@ typedef struct {
     const char *msg;
 } ErrorObject;
 
+typedef struct {
+    Object *base;
+    StackFrame *properties;
+} CompositeObject;
+
 Object *equals(StackFrame *frame, Expr **exprs, size_t size);
 Object *add(StackFrame *frame, Expr **exprs, size_t size);
 Object *subtract(StackFrame *frame, Expr **exprs, size_t size);
@@ -67,4 +75,3 @@ Object *print(StackFrame *frame, Expr **exprs, size_t size);
 Object *toStr(StackFrame *frame, Expr **exprs, size_t size);
 Object *set(StackFrame *frame, Expr **exprs, size_t size);
 
-#define PI 3.14159
