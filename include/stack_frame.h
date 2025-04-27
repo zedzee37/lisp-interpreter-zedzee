@@ -8,4 +8,5 @@ typedef struct StackFrame {
 } StackFrame;
 
 void setGlobalFrame(StackFrame *frame);
+StackFrame *initStackFrame();
 void closeStackFrame(StackFrame *frame);
