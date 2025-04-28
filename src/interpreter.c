@@ -109,6 +109,7 @@ void setGlobalFrame(StackFrame *frame) {
     setVariable(frame, "/", createCFunc(divide, 2));
     setVariable(frame, "==", createCFunc(equals, 2));
     setVariable(frame, "print", createCFunc(print, 1));
+    setVariable(frame, "while", createCFunc(whileLoop, 2));
     setVariable(frame, "pi", createNumberObject(PI));
     setVariable(frame, "str", createCFunc(toStr, 1));
 }
@@ -396,4 +397,32 @@ Object *toStr(StackFrame *frame, Expr **exprs, size_t size) {
     
     release(toConv);
     return result;
+}
+
+Object *whileLoop(StackFrame *frame, Expr **exprs, size_t size) {
+    if (size != 2) {
+        return createErrorObject("wanted 2 params\n");
+    }
+
+    Expr *condition = exprs[0];
+    Expr *loopBody = exprs[1];
+
+    if (loopBody->type != LIST) {
+        return createErrorObject("Expected list expression!");
+    }
+    
+    Object *conditionResult = eval(condition, frame);
+    reference(conditionResult);
+    while (conditionResult->objectType == NUMBER_ID && ((NumberObject *)conditionResult->value)->num == 1.0) {
+        for (int i = 0; i < loopBody->list.exprsCount; i++) {
+            Object *result = eval(loopBody->list.exprs[i], frame);
+            release(result);
+        }
+        
+        dereference(conditionResult);
+        conditionResult = eval(condition, frame);
+        reference(conditionResult);
+    }
+
+    return createNumberObject(0.0);
 }

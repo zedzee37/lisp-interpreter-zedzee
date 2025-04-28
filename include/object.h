@@ -73,5 +73,5 @@ Object *multiply(StackFrame *frame, Expr **exprs, size_t size);
 Object *equality(StackFrame *frame, Expr **exprs, size_t size);
 Object *print(StackFrame *frame, Expr **exprs, size_t size);
 Object *toStr(StackFrame *frame, Expr **exprs, size_t size);
-Object *set(StackFrame *frame, Expr **exprs, size_t size);
+Object *whileLoop(StackFrame *frame, Expr **exprs, size_t size);
 
